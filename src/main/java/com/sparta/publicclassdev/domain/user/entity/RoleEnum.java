@@ -6,6 +6,9 @@ public enum RoleEnum {
     WITHDRAW(Authority.WITHDRAW);
     private final String authority;
 
+    public String getAuthority() {
+        return this.authority;
+    }
     RoleEnum(String authority) {
         this.authority = authority;
     }
