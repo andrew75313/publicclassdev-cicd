@@ -1,0 +1,31 @@
+POST http://localhost:8080/api/users/signup
+Content-Type: application/json
+
+{
+  "name" : "{{name}}",
+  "email" : "{{email}}",
+  "password" : "{{password}}",
+  "admin" : "{{admin}}",
+  "adminToken" : "{{adminToken}}"
+}
+
+###
+# curl -X POST --location "http://localhost:8080/api/users/signup"
+#    -H "Content-Type: application/json"
+#    -d '{
+#          "email" : "asdf1234@email.com",
+#          "password" : "Asdf1234!"
+#        }'
+POST http://localhost:8080/api/users/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+###
+
+
+
+

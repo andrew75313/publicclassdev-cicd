@@ -39,4 +39,8 @@ public class Users {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private RoleEnum role;
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }

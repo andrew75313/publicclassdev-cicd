@@ -1,5 +1,7 @@
 package com.sparta.publicclassdev.global.security;
 
+import com.sparta.publicclassdev.global.exception.CustomException;
+import com.sparta.publicclassdev.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -38,7 +40,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
             if (!jwtUtil.validateToken(tokenValue)) {
                 log.error("Token Error");
-                throw new RuntimeException("Token Error");
+                throw new CustomException(ErrorCode.INVALID_TOKEN);
 //                return;
             }
 
@@ -48,7 +50,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 setAuthentication(info.getSubject());
             } catch (Exception e) {
                 log.error(e.getMessage());
-                throw new RuntimeException("유효한 유저의 정보가 아닙니다.");
+                throw new CustomException(ErrorCode.TOKEN_MISMATCH);
 //                return;
             }
         }
