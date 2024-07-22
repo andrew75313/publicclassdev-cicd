@@ -1,9 +1,11 @@
 package com.sparta.publicclassdev.domain.codereview.service;
 
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
+import com.sparta.publicclassdev.domain.codereview.util.SizingConstants;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
@@ -13,9 +15,13 @@ import jakarta.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -76,5 +82,30 @@ public class CodeReviewsService {
       }
     }
     return new CodeReviewsResponseDto(codeReview, foundUser);
+  }
+
+
+  public CodeReviewsListResponseDto getAllCodieReviews(int page) {
+
+    Pageable pageable = PageRequest.of(page, SizingConstants.PAGE_SIZE);
+
+    Page<CodeReviews> codeReviewsPage = codeReviewsRepository.findAllWhereStatusIsActiveOrderByCreatedAtDesc(
+        pageable);
+
+    List<CodeReviews> codeReviewsList = codeReviewsPage.getContent();
+
+    List<CodeReviewsResponseDto> responseDtoList = codeReviewsList.stream()
+        .map(codeReviews -> {
+          Users foundUser = usersRepository.findById(codeReviews.getUser().getId())
+              .orElseThrow(() -> new NoSuchElementException("사용자가 존재하지 않습니다."));
+          return new CodeReviewsResponseDto(codeReviews, foundUser);
+        })
+        .collect(Collectors.toList());
+
+    return new CodeReviewsListResponseDto(
+        codeReviewsPage.getPageable().getPageNumber() + 1,
+        codeReviewsPage.getTotalPages(),
+        codeReviewsPage.getTotalElements(),
+        responseDtoList);
   }
 }
