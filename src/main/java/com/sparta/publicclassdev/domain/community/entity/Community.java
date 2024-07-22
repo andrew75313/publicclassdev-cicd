@@ -1,6 +1,11 @@
 package com.sparta.publicclassdev.domain.community.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.sparta.publicclassdev.domain.user.entity.Users;
+import com.sparta.publicclassdev.global.entity.Timestamped;
+import com.sparta.publicclassdev.global.exception.CustomException;
+import com.sparta.publicclassdev.global.exception.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,7 +39,7 @@ public class Community extends Timestamped {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id")
-    private User user;
+    private Users user;
 
     @Builder
     public Community(String title, String content, Category category){

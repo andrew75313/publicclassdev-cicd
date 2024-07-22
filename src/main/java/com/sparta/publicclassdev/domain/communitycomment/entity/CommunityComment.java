@@ -1,7 +1,7 @@
 package com.sparta.publicclassdev.domain.communitycomment.entity;
 
 import com.sparta.publicclassdev.domain.community.entity.Community;
-import com.sparta.publicclassdev.domain.user.entity.User;
+import com.sparta.publicclassdev.domain.user.entity.Users;
 import com.sparta.publicclassdev.global.entity.Timestamped;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +25,7 @@ public class CommunityComment extends Timestamped {
 
     @ManyToOne
     @JoinColumn(name = "users_id")
-    private User user;
+    private Users user;
 
     @ManyToOne
     @JoinColumn(name = "communities_id")
