@@ -1,11 +1,7 @@
 package com.sparta.publicclassdev.domain.community.entity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.sparta.publicclassdev.domain.user.entity.User;
-import com.sparta.publicclassdev.global.entity.Timestamped;
-import com.sparta.publicclassdev.global.exception.CustomException;
-import com.sparta.publicclassdev.global.exception.ErrorCode;
+import com.sparta.publicclassdev.domain.user.entity.Users;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
