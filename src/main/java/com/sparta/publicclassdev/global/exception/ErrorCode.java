@@ -26,7 +26,10 @@ public enum ErrorCode {
 	TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),
 	INVALID_TOKEN(401, "잘못된 JWT 토큰입니다."),
 	TOKEN_MISMATCH(401, "토큰이 일치하지 않습니다."),
-	RE_LOGIN_REQUIRED(401, "재로그인 해주세요");
+	RE_LOGIN_REQUIRED(401, "재로그인 해주세요"),
+
+	// Community
+	NOT_FOUND_CATEGORY(400, "해당 카테고리가 존재하지 않습니다");
 
 	private final Integer status;
 	private final String message;
