@@ -1,6 +1,6 @@
 package com.sparta.publicclassdev.domain.codereview.entity;
 
-import com.sparta.publicclassdev.domain.user.entity.User;
+import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.entity.Timestamped;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,23 +22,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "codereviews")
 public class CodeReviews extends Timestamped {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(nullable = false)
-    private String title;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private String category;
+  @Column(nullable = false)
+  private String title;
 
-    @Column(nullable = false)
-    private String contents;
+  @Column(nullable = false)
+  private String category;
 
-    @Column
-    private String code;
+  @Column(nullable = false)
+  private String contents;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+  @Column
+  private String code;
+
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private Users user;
 }
