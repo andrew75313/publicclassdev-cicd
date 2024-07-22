@@ -1,7 +1,6 @@
 package com.sparta.publicclassdev.domain.community.entity;
 
-import com.sparta.publicclassdev.domain.user.entity.User;
-import jakarta.persistence.Column;
+import com.sparta.publicclassdev.domain.user.entity.Users;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,7 +18,7 @@ public class CommunityComment {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users user;
 
     @ManyToOne
     @JoinColumn(name = "communities_id")

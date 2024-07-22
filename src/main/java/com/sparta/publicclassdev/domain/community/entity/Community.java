@@ -1,6 +1,6 @@
 package com.sparta.publicclassdev.domain.community.entity;
 
-import com.sparta.publicclassdev.domain.user.entity.User;
+import com.sparta.publicclassdev.domain.user.entity.Users;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,5 +19,5 @@ public class Community {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users user;
 }
