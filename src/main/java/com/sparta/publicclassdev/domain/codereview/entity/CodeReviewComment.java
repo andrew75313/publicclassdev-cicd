@@ -1,7 +1,6 @@
 package com.sparta.publicclassdev.domain.codereview.entity;
 
-import com.sparta.publicclassdev.domain.user.entity.Users;
-import jakarta.persistence.Column;
+import com.sparta.publicclassdev.domain.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,9 +18,9 @@ public class CodeReviewComment {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private Users user;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "code_review_id")
-    private CodeReview codeReview;
+    private CodeReviews codeReviews;
 }
