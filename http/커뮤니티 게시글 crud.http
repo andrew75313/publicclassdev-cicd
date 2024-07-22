@@ -1,0 +1,12 @@
+### POST 게시글 생성
+POST http://localhost:8080/api/community
+Content-Type: application/json
+
+{
+  "title": "title",
+  "content": "contents",
+  "category": "INFO"
+}
+
+
+###
