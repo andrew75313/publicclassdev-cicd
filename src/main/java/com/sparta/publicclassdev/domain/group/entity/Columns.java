@@ -1,6 +1,6 @@
 package com.sparta.publicclassdev.domain.group.entity;
 
-import com.sparta.publicclassdev.domain.user.entity.User;
+import com.sparta.publicclassdev.domain.user.entity.Users;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,5 +22,5 @@ public class Columns {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users user;
 }
