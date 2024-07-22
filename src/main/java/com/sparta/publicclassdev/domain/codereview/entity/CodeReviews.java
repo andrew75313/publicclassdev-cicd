@@ -4,6 +4,8 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.entity.Timestamped;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,9 +41,26 @@ public class CodeReviews extends Timestamped {
   @Column
   private String code;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Status status;
+
   @ManyToOne
   @JoinColumn(name = "user_id")
   private Users user;
+
+  public enum Status {
+    ACTIVE,
+    DELETED;
+  }
+
+  public void delete() {
+    this.status = Status.DELETED;
+  }
+
+  public void active() {
+    this.status = Status.ACTIVE;
+  }
 
   public void updateCode(String code) {
     this.code = code;

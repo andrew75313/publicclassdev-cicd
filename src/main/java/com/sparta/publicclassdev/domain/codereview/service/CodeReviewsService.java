@@ -4,6 +4,7 @@ import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDt
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
+import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
 import com.sparta.publicclassdev.domain.codereview.util.SizingConstants;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
@@ -54,6 +55,7 @@ public class CodeReviewsService {
         .title(codeReviewsRequestDto.getTitle())
         .category(categories)
         .contents(codeReviewsRequestDto.getContents())
+        .status(Status.ACTIVE)
         .build();
 
     codeReviewsRepository.save(codeReview);
