@@ -42,4 +42,8 @@ public class CodeReviews extends Timestamped {
   @ManyToOne
   @JoinColumn(name = "user_id")
   private Users user;
+
+  public void updateCode(String code) {
+    this.code = code;
+  }
 }
