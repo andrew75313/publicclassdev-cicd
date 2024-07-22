@@ -1,7 +1,7 @@
 package com.sparta.publicclassdev.domain.community.controller;
 
-import com.sparta.publicclassdev.domain.community.dto.CommunityRequestDto;
-import com.sparta.publicclassdev.domain.community.dto.CommunityResponseDto;
+import com.sparta.publicclassdev.domain.community.dto.CommunitiesRequestDto;
+import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
 import com.sparta.publicclassdev.domain.community.service.CommunityService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class CommunityController {
+public class CommunitiesController {
     private final CommunityService service;
 
     @PostMapping("/community")
-    public ResponseEntity<DataResponse<CommunityResponseDto>> createPost(@RequestBody CommunityRequestDto requestDto) {
-        CommunityResponseDto responseDto = service.createPost(requestDto);
+    public ResponseEntity<DataResponse<CommunitiesResponseDto>> createPost(@RequestBody CommunitiesRequestDto requestDto) {
+        CommunitiesResponseDto responseDto = service.createPost(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new DataResponse<>(HttpStatus.CREATED.value(), "커뮤니티 게시글 생성", responseDto));
     }
 }

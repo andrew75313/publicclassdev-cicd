@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @Entity
 @Table(name = "communities")
 @NoArgsConstructor
-public class Community extends Timestamped {
+public class Communities extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,7 +41,7 @@ public class Community extends Timestamped {
     private Users user;
 
     @Builder
-    public Community(String title, String content, Category category){
+    public Communities(String title, String content, Category category){
         this.title = title;
         this.content = content;
         this.category = category;

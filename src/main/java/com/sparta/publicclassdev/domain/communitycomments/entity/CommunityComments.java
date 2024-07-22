@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.communitycomment.entity;
+package com.sparta.publicclassdev.domain.communitycomments.entity;
 
 import com.sparta.publicclassdev.domain.community.entity.Community;
 import com.sparta.publicclassdev.domain.users.entity.Users;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "communitycomments")
 @NoArgsConstructor
-public class CommunityComment extends Timestamped {
+public class CommunityComments extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,7 +32,7 @@ public class CommunityComment extends Timestamped {
     private Community community;
 
     @Builder
-    public CommunityComment(String content){
+    public CommunityComments(String content){
         this.content = content;
     }
 }
