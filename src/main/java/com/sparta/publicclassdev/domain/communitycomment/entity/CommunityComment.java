@@ -1,9 +1,8 @@
 package com.sparta.publicclassdev.domain.communitycomment.entity;
 
 import com.sparta.publicclassdev.domain.community.entity.Community;
-import com.sparta.publicclassdev.domain.user.entity.Users;
-import com.sparta.publicclassdev.global.entity.Timestamped;
 import com.sparta.publicclassdev.domain.users.entity.Users;
+import com.sparta.publicclassdev.global.entity.Timestamped;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
