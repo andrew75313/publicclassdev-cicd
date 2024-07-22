@@ -1,12 +1,13 @@
-package com.sparta.publicclassdev.domain.user.service;
+package com.sparta.publicclassdev.domain.users.service;
 
-import com.sparta.publicclassdev.domain.user.dto.LoginRequestDto;
-import com.sparta.publicclassdev.domain.user.dto.LoginResponseDto;
-import com.sparta.publicclassdev.domain.user.dto.SignupRequestDto;
-import com.sparta.publicclassdev.domain.user.dto.SignupResponseDto;
-import com.sparta.publicclassdev.domain.user.entity.RoleEnum;
-import com.sparta.publicclassdev.domain.user.entity.Users;
-import com.sparta.publicclassdev.domain.user.repository.UsersRepository;
+
+import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
+import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
+import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
+import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
+import com.sparta.publicclassdev.domain.users.entity.Users;
+import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import com.sparta.publicclassdev.global.security.JwtUtil;

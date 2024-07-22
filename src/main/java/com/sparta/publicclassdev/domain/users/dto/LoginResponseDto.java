@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.user.dto;
+package com.sparta.publicclassdev.domain.users.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

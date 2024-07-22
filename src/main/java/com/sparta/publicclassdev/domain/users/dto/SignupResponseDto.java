@@ -1,6 +1,6 @@
-package com.sparta.publicclassdev.domain.user.dto;
+package com.sparta.publicclassdev.domain.users.dto;
 
-import com.sparta.publicclassdev.domain.user.entity.RoleEnum;
+import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

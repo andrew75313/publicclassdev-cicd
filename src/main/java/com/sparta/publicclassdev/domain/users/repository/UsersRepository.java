@@ -1,6 +1,6 @@
-package com.sparta.publicclassdev.domain.user.repository;
+package com.sparta.publicclassdev.domain.users.repository;
 
-import com.sparta.publicclassdev.domain.user.entity.Users;
+import com.sparta.publicclassdev.domain.users.entity.Users;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

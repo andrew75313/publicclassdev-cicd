@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.user.entity;
+package com.sparta.publicclassdev.domain.users.entity;
 
 public enum RoleEnum {
     USER(Authority.USER),

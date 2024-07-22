@@ -1,6 +1,6 @@
 package com.sparta.publicclassdev.global.security;
 
-import com.sparta.publicclassdev.domain.user.entity.Users;
+import com.sparta.publicclassdev.domain.users.entity.Users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
