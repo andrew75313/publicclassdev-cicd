@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.user.dto;
+package com.sparta.publicclassdev.domain.users.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
