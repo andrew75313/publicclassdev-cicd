@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.domain.codereview.controller;
 
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsDetailResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,5 +46,15 @@ public class CodeReviewsController {
 
     return ResponseEntity.status(HttpStatus.OK)
         .body(new DataResponse<>(200, "코드 리뷰 게시글 조회 완료", responseList));
+  }
+
+  @GetMapping("/codereviews/{codeReviewsId}")
+  public ResponseEntity<DataResponse<CodeReviewsDetailResponseDto>> getCodeReview(
+      @PathVariable(name = "codeReviewsId") Long codeReviewsId) {
+
+    CodeReviewsDetailResponseDto response = codeReviewsService.getCodeReview(codeReviewsId);
+
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(new DataResponse<>(200, "코드 리뷰 게시글 조회 완료", response));
   }
 }

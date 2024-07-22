@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.domain.codereview.service;
 
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsDetailResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
@@ -10,10 +11,13 @@ import com.sparta.publicclassdev.domain.codereview.util.SizingConstants;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
+import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import jakarta.transaction.Transactional;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -109,5 +113,39 @@ public class CodeReviewsService {
         codeReviewsPage.getTotalPages(),
         codeReviewsPage.getTotalElements(),
         responseDtoList);
+  }
+
+  public CodeReviewsDetailResponseDto getCodeReview(Long codeReviewsId) {
+
+    CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
+        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
+    );
+
+    if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
+      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
+    }
+
+    Users foundUser = usersRepository.findById(foundCodeReviews.getUser().getId()).orElseThrow(
+        () -> new NoSuchElementException("존재하지 않는 사용자입니다.")
+    );
+
+    String code;
+    try (InputStream stream = minioClient.getObject(
+        GetObjectArgs.builder()
+            .bucket("project-dev-bucket")
+            .object("codereviews-code/code-" + foundCodeReviews.getId() + ".txt")
+            .build())) {
+      ByteArrayOutputStream result = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024];
+      int length;
+      while ((length = stream.read(buffer)) != -1) {
+        result.write(buffer, 0, length);
+      }
+      code = result.toString(StandardCharsets.UTF_8.name());
+    } catch (Exception e) {
+      throw new RuntimeException("파일 다운로드 오류가 발생했습니다.");
+    }
+
+    return new CodeReviewsDetailResponseDto(foundCodeReviews, code, foundUser);
   }
 }
