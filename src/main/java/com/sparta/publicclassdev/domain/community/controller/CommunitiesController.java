@@ -2,7 +2,7 @@ package com.sparta.publicclassdev.domain.community.controller;
 
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesRequestDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
-import com.sparta.publicclassdev.domain.community.service.CommunityService;
+import com.sparta.publicclassdev.domain.community.service.CommunitiesService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class CommunitiesController {
-    private final CommunityService service;
+    private final CommunitiesService service;
 
     @PostMapping("/community")
     public ResponseEntity<DataResponse<CommunitiesResponseDto>> createPost(@RequestBody CommunitiesRequestDto requestDto) {
