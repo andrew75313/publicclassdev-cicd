@@ -2,7 +2,7 @@
 name: "[Task] 이슈카드 제목 설정하기"
 about: Describe this issue template's purpose here.
 title: ''
-labels: bug, help wanted
+labels: ''
 assignees: ''
 
 ---
