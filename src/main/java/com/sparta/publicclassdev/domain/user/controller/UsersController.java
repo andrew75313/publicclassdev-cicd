@@ -1,9 +1,10 @@
 package com.sparta.publicclassdev.domain.user.controller;
 
-import com.sparta.publicclassdev.domain.user.dto.UsersRequestDto;
-import com.sparta.publicclassdev.domain.user.dto.UsersResponseDto;
+import com.sparta.publicclassdev.domain.user.dto.SignupRequestDto;
+import com.sparta.publicclassdev.domain.user.dto.SignupResponseDto;
 import com.sparta.publicclassdev.domain.user.service.UsersService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsersController {
     private final UsersService usersService;
     @PostMapping("/signup")
-    public ResponseEntity<DataResponse<UsersResponseDto>> createUser(@RequestBody UsersRequestDto requestDto) {
-        UsersResponseDto responseDto = usersService.createUser(requestDto);
-        DataResponse<UsersResponseDto> response = new DataResponse<>(HttpStatus.CREATED.value(), "회원가입 성공", responseDto);
+    public ResponseEntity<DataResponse<SignupResponseDto>> createUser(@Valid @RequestBody SignupRequestDto requestDto) {
+        SignupResponseDto responseDto = usersService.createUser(requestDto);
+        DataResponse<SignupResponseDto> response = new DataResponse<>(HttpStatus.CREATED.value(), "회원가입 성공", responseDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

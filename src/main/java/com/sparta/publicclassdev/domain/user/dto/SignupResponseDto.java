@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Builder
 @Getter
-public class UsersResponseDto {
+public class SignupResponseDto {
     private String name;
     private String email;
     private RoleEnum role;
