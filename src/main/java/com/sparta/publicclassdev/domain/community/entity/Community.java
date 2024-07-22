@@ -7,6 +7,7 @@ import com.sparta.publicclassdev.global.entity.Timestamped;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import jakarta.persistence.Column;
+import com.sparta.publicclassdev.domain.users.entity.Users;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

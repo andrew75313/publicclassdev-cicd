@@ -1,8 +1,8 @@
-package com.sparta.publicclassdev.domain.user.controller;
+package com.sparta.publicclassdev.domain.users.controller;
 
-import com.sparta.publicclassdev.domain.user.dto.SignupRequestDto;
-import com.sparta.publicclassdev.domain.user.dto.SignupResponseDto;
-import com.sparta.publicclassdev.domain.user.service.UsersService;
+import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
+import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
+import com.sparta.publicclassdev.domain.users.service.UsersService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
