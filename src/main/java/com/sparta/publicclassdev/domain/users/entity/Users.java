@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.user.entity;
+package com.sparta.publicclassdev.domain.users.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,11 +14,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,4 +38,12 @@ public class Users {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private RoleEnum role;
+
+    @Builder
+    public Users (String name, String email, String password, RoleEnum role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
 }

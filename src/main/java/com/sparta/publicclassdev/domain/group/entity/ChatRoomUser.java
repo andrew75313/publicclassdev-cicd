@@ -1,6 +1,6 @@
 package com.sparta.publicclassdev.domain.group.entity;
 
-import com.sparta.publicclassdev.domain.user.entity.Users;
+import com.sparta.publicclassdev.domain.users.entity.Users;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
