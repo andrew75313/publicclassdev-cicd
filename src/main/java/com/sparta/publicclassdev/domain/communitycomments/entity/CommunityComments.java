@@ -32,7 +32,9 @@ public class CommunityComments extends Timestamped {
     private Communities community;
 
     @Builder
-    public CommunityComments(String content){
+    public CommunityComments(String content, Users user, Communities community){
+        this.community = community;
+        this.user = user;
         this.content = content;
     }
 }
