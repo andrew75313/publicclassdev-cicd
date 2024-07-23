@@ -6,6 +6,7 @@ import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
 import com.sparta.publicclassdev.domain.codereview.service.CodeReviewsService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
+import com.sparta.publicclassdev.global.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class CodeReviewsController {
       , @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
     CodeReviewsResponseDto response = codeReviewsService.createCodeReview(codeReviewsRequestDto,
-        userDetails.getUsers);
+        userDetails.getUser());
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(new DataResponse<>(201, "코드 리뷰 게시글 등록 완료", response));
