@@ -42,18 +42,9 @@ public class CodeReviewsService {
   public CodeReviewsResponseDto createCodeReview(CodeReviewsRequestDto codeReviewsRequestDto,
       Users user) {
 
-    Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
-        () -> new NoSuchElementException("사용자가 존재하지 않습니다.")
-    );
+    Users foundUser = validateUser(user);
 
-    if (foundUser.getRole().equals(RoleEnum.WITHDRAW)) {
-      throw new NoSuchElementException("존재하지 않는 사용자입니다.");
-    }
-
-    String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCategory().split("#"))
-        .map(s -> s.replace(" ", "").toLowerCase())
-        .filter(s -> !s.isEmpty())
-        .collect(Collectors.joining(" #"));
+    String categories = arrangeCategory(codeReviewsRequestDto.getCategory());
 
     CodeReviews codeReview = CodeReviews.builder()
         .title(codeReviewsRequestDto.getTitle())
@@ -65,32 +56,12 @@ public class CodeReviewsService {
 
     codeReviewsRepository.save(codeReview);
 
-    String code = codeReviewsRequestDto.getCode();
+    String uploadedCode = uploadCodeFile(codeReview.getId(), codeReviewsRequestDto.getCode());
 
-    if (code != null && !code.isEmpty()) {
-      try {
-        String filename = "codereviews-code/code-" + codeReview.getId() + ".txt";
+    codeReview.updateCode(uploadedCode);
 
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(
-            StandardCharsets.UTF_8));
-
-        minioClient.putObject(
-            PutObjectArgs.builder()
-                .bucket("project-dev-bucket")
-                .object(filename)
-                .stream(inputStream, inputStream.available(), -1)
-                .contentType("text/plain")
-                .build()
-        );
-
-        codeReview.updateCode(filename);
-      } catch (Exception e) {
-        throw new RuntimeException("파일 업로드 오류가 발생했습니다.");
-      }
-    }
     return new CodeReviewsResponseDto(codeReview, foundUser);
   }
-
 
   public CodeReviewsListResponseDto getAllCodieReviews(int page) {
 
@@ -118,34 +89,13 @@ public class CodeReviewsService {
 
   public CodeReviewsDetailResponseDto getCodeReview(Long codeReviewsId) {
 
-    CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
-        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
-    );
-
-    if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
-      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
-    }
+    CodeReviews foundCodeReviews = validateCodeReviewId(codeReviewsId);
 
     Users foundUser = usersRepository.findById(foundCodeReviews.getUser().getId()).orElseThrow(
         () -> new NoSuchElementException("존재하지 않는 사용자입니다.")
     );
 
-    String code;
-    try (InputStream stream = minioClient.getObject(
-        GetObjectArgs.builder()
-            .bucket("project-dev-bucket")
-            .object("codereviews-code/code-" + foundCodeReviews.getId() + ".txt")
-            .build())) {
-      ByteArrayOutputStream result = new ByteArrayOutputStream();
-      byte[] buffer = new byte[1024];
-      int length;
-      while ((length = stream.read(buffer)) != -1) {
-        result.write(buffer, 0, length);
-      }
-      code = result.toString(StandardCharsets.UTF_8.name());
-    } catch (Exception e) {
-      throw new RuntimeException("파일 다운로드 오류가 발생했습니다.");
-    }
+    String code = downloadCodeFile(foundCodeReviews);
 
     return new CodeReviewsDetailResponseDto(foundCodeReviews, code, foundUser);
   }
@@ -153,21 +103,9 @@ public class CodeReviewsService {
   @Transactional
   public void deleteCodeReview(Long codeReviewsId, Users user) {
 
-    CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
-        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
-    );
+    CodeReviews foundCodeReviews = validateCodeReviewId(codeReviewsId);
 
-    if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
-      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
-    }
-
-    Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
-        () -> new NoSuchElementException("사용자가 존재하지 않습니다.")
-    );
-
-    if (foundUser.getRole().equals(RoleEnum.WITHDRAW)) {
-      throw new NoSuchElementException("존재하지 않는 사용자입니다.");
-    }
+    Users foundUser = validateUser(user);
 
     if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
       throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
@@ -180,14 +118,28 @@ public class CodeReviewsService {
   public CodeReviewsResponseDto updateCodeReview(CodeReviewsRequestDto codeReviewsRequestDto,
       Long codeReviewsId, Users user) {
 
-    CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
-        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
-    );
+    CodeReviews foundCodeReviews = validateCodeReviewId(codeReviewsId);
 
-    if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
-      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
+    Users foundUser = validateUser(user);
+
+    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
+      throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
     }
 
+    foundCodeReviews.updateCodeReview(codeReviewsRequestDto);
+
+    String categories = arrangeCategory(codeReviewsRequestDto.getCategory());
+
+    foundCodeReviews.updateCategory(categories);
+
+    String uploadedCode = uploadCodeFile(foundCodeReviews.getId(), codeReviewsRequestDto.getCode());
+
+    foundCodeReviews.updateCode(uploadedCode);
+
+    return new CodeReviewsResponseDto(foundCodeReviews, foundUser);
+  }
+
+  public Users validateUser(Users user) {
     Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
         () -> new NoSuchElementException("사용자가 존재하지 않습니다.")
     );
@@ -196,25 +148,34 @@ public class CodeReviewsService {
       throw new NoSuchElementException("존재하지 않는 사용자입니다.");
     }
 
-    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
-      throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
+    return foundUser;
+  }
+
+  public CodeReviews validateCodeReviewId(Long codeReviewsId) {
+    CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
+        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
+    );
+
+    if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
+      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
     }
 
-    foundCodeReviews.updateCodeReview(codeReviewsRequestDto);
+    return foundCodeReviews;
+  }
 
-    String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCategory().split("#"))
+  public String arrangeCategory(String category) {
+
+    return "#" + Arrays.stream(category.split("#"))
         .map(s -> s.replace(" ", "").toLowerCase())
         .filter(s -> !s.isEmpty())
         .collect(Collectors.joining(" #"));
+  }
 
-    foundCodeReviews.updateCategory(categories);
-
-    String code = codeReviewsRequestDto.getCode();
+  public String uploadCodeFile(Long codeReviewId, String code) {
+    String filename = "codereviews-code/code-" + codeReviewId + ".txt";
 
     if (code != null && !code.isEmpty()) {
       try {
-        String filename = "codereviews-code/code-" + foundCodeReviews.getId() + ".txt";
-
         ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(
             StandardCharsets.UTF_8));
 
@@ -226,12 +187,33 @@ public class CodeReviewsService {
                 .contentType("text/plain")
                 .build()
         );
-
-        foundCodeReviews.updateCode(filename);
       } catch (Exception e) {
         throw new RuntimeException("파일 업로드 오류가 발생했습니다.");
       }
     }
-    return new CodeReviewsResponseDto(foundCodeReviews, foundUser);
+
+    return filename;
+  }
+
+  public String downloadCodeFile(CodeReviews codeReview) {
+    String code;
+
+    try (InputStream stream = minioClient.getObject(
+        GetObjectArgs.builder()
+            .bucket("project-dev-bucket")
+            .object(codeReview.getCode())
+            .build())) {
+      ByteArrayOutputStream result = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024];
+      int length;
+      while ((length = stream.read(buffer)) != -1) {
+        result.write(buffer, 0, length);
+      }
+      code = result.toString(StandardCharsets.UTF_8.name());
+    } catch (Exception e) {
+      throw new RuntimeException("파일 다운로드 오류가 발생했습니다.");
+    }
+
+    return code;
   }
 }
