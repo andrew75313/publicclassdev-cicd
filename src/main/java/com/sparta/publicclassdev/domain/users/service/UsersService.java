@@ -93,7 +93,8 @@ public class UsersService {
     }
 
     public UpdateProfileResponseDto updateProfile(Users user, ProfileRequestDto requestDto) {
-        user.updateUsers(requestDto.getName(), requestDto.getPassword(), requestDto.getIntro());
+        String password = passwordEncoder.encode(requestDto.getPassword());
+        user.updateUsers(requestDto.getName(), password, requestDto.getIntro());
         usersRepository.save(user);
         return new UpdateProfileResponseDto(user);
     }
