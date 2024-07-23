@@ -53,7 +53,7 @@ public class CodeReviewsService {
     String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCode().split("#"))
         .map(s -> s.replace(" ", "").toLowerCase())
         .filter(s -> !s.isEmpty())
-        .collect(Collectors.joining("#"));
+        .collect(Collectors.joining(" #"));
 
     CodeReviews codeReview = CodeReviews.builder()
         .title(codeReviewsRequestDto.getTitle())
