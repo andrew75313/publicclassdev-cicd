@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.domain.codereview.entity;
 
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.entity.Timestamped;
 import jakarta.persistence.Column;
@@ -60,6 +61,15 @@ public class CodeReviews extends Timestamped {
 
   public void active() {
     this.status = Status.ACTIVE;
+  }
+
+  public void updateCodeReview(CodeReviewsRequestDto codeReviewsRequestDto) {
+    this.title = codeReviewsRequestDto.getTitle();
+    this.contents = codeReviewsRequestDto.getContents();
+  }
+
+  public void updateCategory(String category) {
+    this.category = category;
   }
 
   public void updateCode(String code) {

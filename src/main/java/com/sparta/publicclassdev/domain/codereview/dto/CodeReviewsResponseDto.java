@@ -15,6 +15,7 @@ public class CodeReviewsResponseDto {
   private final String contents;
   private final String code;
   private final LocalDateTime createdAt;
+  private final LocalDateTime modifiedAt;
 
   public CodeReviewsResponseDto(CodeReviews codeReviews, Users user) {
     this.id = codeReviews.getId();
@@ -24,5 +25,6 @@ public class CodeReviewsResponseDto {
     this.contents = codeReviews.getContents();
     this.code = codeReviews.getCode();
     this.createdAt = codeReviews.getCreatedAt();
+    this.modifiedAt = codeReviews.getModifiedAt();
   }
 }

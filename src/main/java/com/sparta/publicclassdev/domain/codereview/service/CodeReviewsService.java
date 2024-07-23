@@ -174,4 +174,63 @@ public class CodeReviewsService {
 
     foundCodeReviews.delete();
   }
+
+  @Transactional
+  public CodeReviewsResponseDto updateCodeReview(CodeReviewsRequestDto codeReviewsRequestDto,
+      Long codeReviewsId, Users user) {
+
+    CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
+        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
+    );
+
+    if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
+      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
+    }
+
+    Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
+        () -> new NoSuchElementException("사용자가 존재하지 않습니다.")
+    );
+
+    if (foundUser.getRole().equals(RoleEnum.WITHDRAW)) {
+      throw new NoSuchElementException("존재하지 않는 사용자입니다.");
+    }
+
+    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
+      throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
+    }
+
+    foundCodeReviews.updateCodeReview(codeReviewsRequestDto);
+
+    String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCode().split("#"))
+        .map(s -> s.replace(" ", "").toLowerCase())
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.joining(" #"));
+
+    foundCodeReviews.updateCategory(categories);
+
+    String code = codeReviewsRequestDto.getCode();
+
+    if (code != null && !code.isEmpty()) {
+      try {
+        String filename = "codereviews-code/code-" + foundCodeReviews.getId() + ".txt";
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(
+            StandardCharsets.UTF_8));
+
+        minioClient.putObject(
+            PutObjectArgs.builder()
+                .bucket("project-dev-bucket")
+                .object(filename)
+                .stream(inputStream, inputStream.available(), -1)
+                .contentType("text/plain")
+                .build()
+        );
+
+        foundCodeReviews.updateCode(filename);
+      } catch (Exception e) {
+        throw new RuntimeException("파일 업로드 오류가 발생했습니다.");
+      }
+    }
+    return new CodeReviewsResponseDto(foundCodeReviews, foundUser);
+  }
 }
