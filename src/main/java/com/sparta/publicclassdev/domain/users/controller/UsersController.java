@@ -2,9 +2,11 @@ package com.sparta.publicclassdev.domain.users.controller;
 
 import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.UpdateProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.service.UsersService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
 import com.sparta.publicclassdev.global.dto.MessageResponse;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +49,14 @@ public class UsersController {
     public ResponseEntity<DataResponse<ProfileResponseDto>> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         ProfileResponseDto responseDto = usersService.getProfile(userDetails.getUser());
         DataResponse<ProfileResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "프로필 조회 완료", responseDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @PatchMapping("/profiles")
+    public ResponseEntity<DataResponse<UpdateProfileResponseDto>> updateProfile(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Valid @RequestBody ProfileRequestDto requestDto) {
+        UpdateProfileResponseDto responseDto = usersService.updateProfile(userDetails.getUser(), requestDto);
+        DataResponse<UpdateProfileResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "프로필 수정 완료", responseDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

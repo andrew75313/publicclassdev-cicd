@@ -18,4 +18,10 @@ public class ProfileResponseDto {
         this.intro = user.getIntro();
         this.recentCommunities = recentCommunities;
     }
+
+    public ProfileResponseDto(Users user) {
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.intro = user.getIntro();
+    }
 }

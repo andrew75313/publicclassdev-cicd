@@ -6,9 +6,11 @@ import com.sparta.publicclassdev.domain.community.entity.Communities;
 import com.sparta.publicclassdev.domain.community.repository.CommunitiesRepository;
 import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.UpdateProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +90,12 @@ public class UsersService {
             (communities) -> new CommunitiesResponseDto(communities.getTitle(), communities.getContent(), communities.getCategory()))
             .toList();
         return new ProfileResponseDto(user, recentResponseDto);
+    }
+
+    public UpdateProfileResponseDto updateProfile(Users user, ProfileRequestDto requestDto) {
+        user.updateUsers(requestDto.getName(), requestDto.getPassword(), requestDto.getIntro());
+        usersRepository.save(user);
+        return new UpdateProfileResponseDto(user);
     }
 
     public Users findById(Long id) {
