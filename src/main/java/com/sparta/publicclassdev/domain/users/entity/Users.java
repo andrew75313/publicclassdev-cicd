@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.domain.users.entity;
 
+import com.sparta.publicclassdev.domain.teams.entity.TeamUsers;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,7 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,6 +41,9 @@ public class Users {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private RoleEnum role;
+
+    @OneToMany(mappedBy = "user")
+    private List<TeamUsers> teamUsers;
 
     @Builder
     public Users (String name, String email, String password, RoleEnum role) {

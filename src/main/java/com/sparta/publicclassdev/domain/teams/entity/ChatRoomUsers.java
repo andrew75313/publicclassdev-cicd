@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.group.entity;
+package com.sparta.publicclassdev.domain.teams.entity;
 
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import jakarta.persistence.Entity;
@@ -10,8 +10,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "invites")
-public class Invites {
+@Table(name = "chatroomuser")
+public class ChatRoomUsers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,6 +21,6 @@ public class Invites {
     private Users user;
 
     @ManyToOne
-    @JoinColumn(name = "groupinfo_id")
-    private GroupInfo groupInfo;
+    @JoinColumn(name = "chatroom_id")
+    private ChatRooms chatRooms;
 }
