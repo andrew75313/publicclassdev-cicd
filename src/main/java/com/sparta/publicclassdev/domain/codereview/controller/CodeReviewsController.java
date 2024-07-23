@@ -69,9 +69,8 @@ public class CodeReviewsController {
 
     codeReviewsService.deleteCodeReview(codeReviewsId, userDetails.getUser());
 
-    return ResponseEntity.status(HttpStatus.NO_CONTENT)
-        .body(new MessageResponse(204, "코드 리뷰 게시글 삭제 완료"));
-
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(new MessageResponse(200, "코드 리뷰 게시글 삭제 완료"));
   }
 
   @PatchMapping("/codereviews/{codeReviewsId}")
