@@ -45,4 +45,8 @@ public class Teams extends Timestamped {
         this.chatRooms = chatRooms;
         this.winners = winners;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

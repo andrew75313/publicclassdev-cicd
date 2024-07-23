@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TeamUsersRepository extends JpaRepository<TeamUsers, Long> {
 
+    void deleteAllById(TeamUsers teamUsers);
 }
