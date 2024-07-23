@@ -31,6 +31,7 @@ public enum ErrorCode {
 	NAME_NOT_UNIQUE(409,"사용 중인 이름입니다."),
 
 	// Community
+	NOT_FOUND_COMMUNITY_POST(400, "해당 게시물이 존재하지 않습니다."),
 	NOT_FOUND_CATEGORY(400, "해당 카테고리가 존재하지 않습니다");
 
 	private final Integer status;
