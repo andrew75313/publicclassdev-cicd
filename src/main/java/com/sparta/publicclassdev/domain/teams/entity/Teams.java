@@ -24,8 +24,6 @@ public class Teams extends Timestamped {
 
     private String name;
 
-    private LocalDateTime createdAt;
-
     @OneToMany(mappedBy = "teams")
     private List<TeamUsers> teamUsers;
 
