@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 @Entity
 @Table(name = "communities")
+@Getter
 @NoArgsConstructor
 public class Communities extends Timestamped {
     @Id
@@ -46,6 +47,10 @@ public class Communities extends Timestamped {
         this.content = content;
         this.category = category;
         this.user = user;
+    }
+
+    public void updateContent(String content){
+        this.content = content;
     }
 
 

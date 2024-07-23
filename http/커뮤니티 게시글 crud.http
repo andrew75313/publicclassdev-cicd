@@ -25,4 +25,11 @@ Authorization: {{Authorization}}
 }
 
 
-###
+### PUT 게시글 수정
+PUT http://localhost:8080/api/community/1
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+{
+  "content": "update contents"
+}

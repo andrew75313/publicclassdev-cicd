@@ -2,6 +2,7 @@ package com.sparta.publicclassdev.domain.community.controller;
 
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesRequestDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
+import com.sparta.publicclassdev.domain.community.dto.CommunitiesUpdateRequestDto;
 import com.sparta.publicclassdev.domain.community.service.CommunitiesService;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.dto.DataResponse;
@@ -12,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,5 +32,11 @@ public class CommunitiesController {
         Users user = userDetails.getUser();
         CommunitiesResponseDto responseDto = service.createPost(requestDto, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(new DataResponse<>(HttpStatus.CREATED.value(), "커뮤니티 게시글 생성", responseDto));
+    }
+
+    @PutMapping("/community/{communityId}")
+    public ResponseEntity<DataResponse<CommunitiesResponseDto>> updatePost(@PathVariable Long communityId,@RequestBody CommunitiesUpdateRequestDto requestDto){
+        CommunitiesResponseDto responseDto = service.updatePost(communityId, requestDto);
+        return ResponseEntity.status(HttpStatus.OK).body(new DataResponse<>(HttpStatus.OK.value(), "수정 완료", responseDto));
     }
 }
