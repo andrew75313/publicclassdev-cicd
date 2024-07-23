@@ -1,9 +1,8 @@
 package com.sparta.publicclassdev.domain.communitycomments.dto;
 
-import lombok.Data;
 import lombok.Getter;
 
-@Data
+@Getter
 public class CommunityCommentResponseDto {
 
     String content;
