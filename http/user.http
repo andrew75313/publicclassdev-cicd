@@ -1,3 +1,13 @@
+###
+# curl -X POST --location "http://localhost:8080/api/users/signup"
+#    -H "Content-Type: application/json"
+#    -d '{
+#         "name" : "홍길동",
+#         "email" : "asdf1234@email.com",
+#         "password" : "Asdf1234!",
+#         "admin" : "true",
+#         "adminToken" : "admin1234!"
+#       }'
 POST http://localhost:8080/api/users/signup
 Content-Type: application/json
 
@@ -10,7 +20,7 @@ Content-Type: application/json
 }
 
 ###
-# curl -X POST --location "http://localhost:8080/api/users/signup"
+# curl -X POST --location "http://localhost:8080/api/users/login"
 #    -H "Content-Type: application/json"
 #    -d '{
 #          "email" : "asdf1234@email.com",
@@ -21,7 +31,7 @@ Content-Type: application/json
 
 {
   "email" : "asdf1234@email.com",
-  "password" : "Asdf1234!"
+  "password" : "Asdf1111!"
 }
 
 > {%
@@ -31,19 +41,30 @@ client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
 ###
 
 ###
+# curl -X GET --location "http://localhost:8080/api/users/profiles"
+#    -H "Content-Type: application/json"
+#    -H "Authorization: Bearer accesstoken"
 GET http://localhost:8080/api/users/profiles
 Content-Type: application/json
 Authorization: {{Authorization}}
 
 ###
+# curl -X PATCH --location "http://localhost:8080/api/users/profiles"
+#    -H "Content-Type: application/json"
+#    -H "Authorization: Bearer accesstoken"
+#    -d '{
+#          "name" : "홍길동",
+#          "password": "Asdf1111!",
+#          "intro": "자기소개"
+#        }'
 PATCH http://localhost:8080/api/users/profiles
 Content-Type: application/json
-Authorization: {{Authorization}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmMTIzNEBlbWFpbC5jb20iLCJhdXRoIjoiQURNSU4iLCJleHAiOjE3MjE3MjI1MTYsImlhdCI6MTcyMTcyMDcxNn0.IQyHiaFPOo9KB2TRVLccB7i3BO7PHar4r6a0Gt23-qw
 
 {
   "name" : "홍길동",
-  "password": "Asdf1234!",
-  "intro": "자기소개"
+  "password" : "Asdf1111!",
+  "intro" : "자기소개"
 }
 
 
