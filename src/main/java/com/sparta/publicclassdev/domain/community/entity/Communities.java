@@ -41,10 +41,11 @@ public class Communities extends Timestamped {
     private Users user;
 
     @Builder
-    public Communities(String title, String content, Category category){
+    public Communities(String title, String content, Category category, Users user){
         this.title = title;
         this.content = content;
         this.category = category;
+        this.user = user;
     }
 
 
