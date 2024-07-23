@@ -1,8 +1,12 @@
 package com.sparta.publicclassdev.domain.users.service;
 
 
+import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
+import com.sparta.publicclassdev.domain.community.entity.Communities;
+import com.sparta.publicclassdev.domain.community.repository.CommunitiesRepository;
 import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
@@ -11,6 +15,7 @@ import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import com.sparta.publicclassdev.global.security.JwtUtil;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +25,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UsersService {
     private final UsersRepository usersRepository;
+    private final CommunitiesRepository communitiesRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -73,5 +79,19 @@ public class UsersService {
         user.updateRefreshToken(responseDto.getRefreshToken());
         usersRepository.save(user);
         return responseDto;
+    }
+
+    public ProfileResponseDto getProfile(Users user) {
+        List<Communities> recentCommunities = communitiesRepository.findPostByUserLimit5(user);
+        List<CommunitiesResponseDto> recentResponseDto = recentCommunities.stream().map(
+            (communities) -> new CommunitiesResponseDto(communities.getTitle(), communities.getContent(), communities.getCategory()))
+            .toList();
+        return new ProfileResponseDto(user, recentResponseDto);
+    }
+
+    public Users findById(Long id) {
+        return usersRepository.findById(id).orElseThrow(
+            () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
     }
 }

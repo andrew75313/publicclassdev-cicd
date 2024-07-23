@@ -30,6 +30,10 @@ client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
 %}
 ###
 
+###
+GET http://localhost:8080/api/users/profiles
+Content-Type: application/json
+Authorization: {{Authorization}}
 
 
 

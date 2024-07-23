@@ -29,6 +29,8 @@ public class Users {
     @Column(nullable = false)
     private String email;
 
+    private String intro;
+
     @Column(nullable = false)
     private String password;
     private Long point;
