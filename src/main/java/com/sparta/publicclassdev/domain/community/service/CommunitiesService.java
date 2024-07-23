@@ -32,10 +32,7 @@ public class CommunitiesService {
     }
 
     public CommunitiesResponseDto updatePost(Long communityId, CommunitiesUpdateRequestDto requestDto) {
-
-        Communities community = repository.findById(communityId).orElseThrow(
-            () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
-        );
+        Communities community = checkCommunity(communityId);
 
         community.updateContent(requestDto.getContent());
         repository.save(community);
@@ -43,9 +40,7 @@ public class CommunitiesService {
     }
 
     public void deletePost(Long communityId, Users user) {
-        Communities community = repository.findById(communityId).orElseThrow(
-            () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
-        );
+        Communities community = checkCommunity(communityId);
 
         if(community.getUser() != user){
             throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
@@ -61,11 +56,15 @@ public class CommunitiesService {
     }
 
     public CommunitiesResponseDto findPost(Long communityId) {
-        Communities community = repository.findById(communityId).orElseThrow(
-            () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
-        );
+        Communities community = checkCommunity(communityId);
 
         return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory());
+    }
+
+    public Communities checkCommunity(Long communityId){
+        return repository.findById(communityId).orElseThrow(
+            () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
+        );
     }
 
 }
