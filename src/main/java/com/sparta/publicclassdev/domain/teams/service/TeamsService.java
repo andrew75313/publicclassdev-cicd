@@ -43,7 +43,7 @@ public class TeamsService {
         teamsRepository.save(teams);
 
         List<Users> teamMembers = new ArrayList<>();
-        for(int i = 0; i < teamSize && !waitUser.isEmpty(); i++) {
+        for (int i = 0; i < teamSize && !waitUser.isEmpty(); i++) {
             Users users = waitUser.remove(0).getUsers();
             teamMembers.add(users);
 
@@ -55,5 +55,9 @@ public class TeamsService {
             teamUsersRepository.delete(teamUsers);
         }
         return new TeamCreatesResponseDto(teams, teamMembers);
+    }
+
+    public void deleteAllTeams() {
+        teamsRepository.deleteAll();
     }
 }

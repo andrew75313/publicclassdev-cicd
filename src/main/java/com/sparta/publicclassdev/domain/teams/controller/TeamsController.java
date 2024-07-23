@@ -21,7 +21,8 @@ public class TeamsController {
     private final TeamsService teamsService;
 
     @PostMapping("/match")
-    public ResponseEntity<MessageResponse> applyMatch(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<MessageResponse> applyMatch(
+        @AuthenticationPrincipal UserDetailsImpl userDetails) {
         teamsService.teamMatch(userDetails.getUser());
         return ResponseEntity.status(HttpStatus.OK)
             .body(new MessageResponse(200, "팀 매칭 성공"));
