@@ -17,7 +17,11 @@ public class UserRedisDao {
     }
 
     public String getRefreshToken(String key) {
-        return  redisTemplate.opsForValue().get(key);
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    public void deleteRefreshToken(String key) {
+        redisTemplate.delete(key);
     }
 
     public boolean hasKey(String key) {

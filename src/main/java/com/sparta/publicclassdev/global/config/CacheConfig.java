@@ -39,7 +39,7 @@ public class CacheConfig {
             = new HashMap<>();
 
         redisCacheConfigMap.put(
-            CacheNames.USERBYUSERNAME,
+            CacheNames.USERBYEMAIL,
             defaultConfig.entryTtl(Duration.ofHours(4)) //entryTtl()을 호출하여 캐시 항목의 만료 시간(TTL)을 설정합니다.  캐시 수명 4시간
         );
 

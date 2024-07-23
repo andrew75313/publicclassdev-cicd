@@ -59,7 +59,7 @@ Authorization: {{Authorization}}
 #        }'
 PATCH http://localhost:8080/api/users/profiles
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmMTIzNEBlbWFpbC5jb20iLCJhdXRoIjoiQURNSU4iLCJleHAiOjE3MjE3MjI1MTYsImlhdCI6MTcyMTcyMDcxNn0.IQyHiaFPOo9KB2TRVLccB7i3BO7PHar4r6a0Gt23-qw
+Authorization: {{Authorization}}
 
 {
   "name" : "홍길동",
@@ -67,5 +67,14 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmMTIzNEBlbWFpbC5jb20iL
   "intro" : "자기소개"
 }
 
+###
+# curl -X POST --location "http://localhost:8080/api/users/logout"
+#    -H "Content-Type: application/json"
+#    -H "Authorization: Bearer accesstoken"
+POST http://localhost:8080/api/users/logout
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+###
 
 

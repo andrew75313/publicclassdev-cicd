@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.global.config;
 
+import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
 import com.sparta.publicclassdev.global.security.JwtAuthorizationFilter;
 import com.sparta.publicclassdev.global.security.JwtUtil;
 import com.sparta.publicclassdev.global.security.UserDetailsServiceImpl;
@@ -24,6 +25,7 @@ public class WebSecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final PasswordEncoder passwordEncoder;
+    private final UserRedisDao redisDao;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -32,7 +34,7 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter(jwtUtil, userDetailsService);
+        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, redisDao);
     }
 
     @Bean

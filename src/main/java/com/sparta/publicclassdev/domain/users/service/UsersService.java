@@ -4,6 +4,7 @@ package com.sparta.publicclassdev.domain.users.service;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
 import com.sparta.publicclassdev.domain.community.entity.Communities;
 import com.sparta.publicclassdev.domain.community.repository.CommunitiesRepository;
+import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
 import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
@@ -14,12 +15,15 @@ import com.sparta.publicclassdev.domain.users.dto.UpdateProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
+import com.sparta.publicclassdev.global.CacheNames;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import com.sparta.publicclassdev.global.security.JwtUtil;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +35,7 @@ public class UsersService {
     private final CommunitiesRepository communitiesRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final UserRedisDao redisDao;
 
     @Value("${ADMIN_TOKEN}")
     private String ADMIN_TOKEN;
@@ -62,6 +67,7 @@ public class UsersService {
             .role(user.getRole())
             .build();
     }
+    @Cacheable(cacheNames = CacheNames.LOGINUSER, key = "'login'+ #p0.getEmail()", unless = "#result== null")
     public LoginResponseDto login(LoginRequestDto requestDto) {
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
@@ -75,11 +81,9 @@ public class UsersService {
         if(user.getRole().equals(RoleEnum.WITHDRAW)) {
             throw new CustomException(ErrorCode.USER_WITHDRAW);
         }
-        LoginResponseDto responseDto = LoginResponseDto.builder()
-            .accessToken(jwtUtil.createAccessToken(user))
-            .refreshToken(jwtUtil.createRefreshToken(user))
-            .build();
-        user.updateRefreshToken(responseDto.getRefreshToken());
+        LoginResponseDto responseDto = new LoginResponseDto(jwtUtil.createAccessToken(user),
+            jwtUtil.createRefreshToken(user));
+        redisDao.setRefreshToken(email, responseDto.getRefreshToken(), jwtUtil.getREFRESHTOKEN_TIME());
         usersRepository.save(user);
         return responseDto;
     }
@@ -103,5 +107,18 @@ public class UsersService {
         return usersRepository.findById(id).orElseThrow(
             () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
+    }
+
+    @CacheEvict(cacheNames = CacheNames.LOGINUSER, key = "'login'+#p1")
+    @Transactional
+    public void logout(String accessToken, String email) {
+        String substringToken = jwtUtil.substringToken(accessToken);
+        Long expiration = jwtUtil.getExpiration(substringToken);
+        redisDao.setBlackList(substringToken, "logout", expiration);
+        if (redisDao.hasKey(email)) {
+            redisDao.deleteRefreshToken(email);
+        } else {
+            throw new CustomException(ErrorCode.USER_LOGOUT);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.domain.users.controller;
 
+import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
 import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
@@ -12,9 +13,11 @@ import com.sparta.publicclassdev.global.dto.DataResponse;
 import com.sparta.publicclassdev.global.dto.MessageResponse;
 import com.sparta.publicclassdev.global.security.JwtUtil;
 import com.sparta.publicclassdev.global.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -58,5 +61,12 @@ public class UsersController {
         UpdateProfileResponseDto responseDto = usersService.updateProfile(userDetails.getUser(), requestDto);
         DataResponse<UpdateProfileResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "프로필 수정 완료", responseDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<MessageResponse> logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request) {
+        String accessToken = request.getHeader(JwtUtil.AUTHORIZATION_HEADER);
+        usersService.logout(accessToken, userDetails.getUser().getEmail());
+        MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "로그아웃");
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 }
