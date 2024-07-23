@@ -11,6 +11,8 @@ import com.sparta.publicclassdev.domain.codereview.util.SizingConstants;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
+import com.sparta.publicclassdev.global.exception.CustomException;
+import com.sparta.publicclassdev.global.exception.ErrorCode;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -21,7 +23,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -75,7 +76,7 @@ public class CodeReviewsService {
     List<CodeReviewsResponseDto> responseDtoList = codeReviewsList.stream()
         .map(codeReviews -> {
           Users foundUser = usersRepository.findById(codeReviews.getUser().getId())
-              .orElseThrow(() -> new NoSuchElementException("사용자가 존재하지 않습니다."));
+              .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
           return new CodeReviewsResponseDto(codeReviews, foundUser);
         })
         .collect(Collectors.toList());
@@ -92,7 +93,7 @@ public class CodeReviewsService {
     CodeReviews foundCodeReviews = validateCodeReviewId(codeReviewsId);
 
     Users foundUser = usersRepository.findById(foundCodeReviews.getUser().getId()).orElseThrow(
-        () -> new NoSuchElementException("존재하지 않는 사용자입니다.")
+        () -> new CustomException(ErrorCode.USER_NOT_FOUND)
     );
 
     String code = downloadCodeFile(foundCodeReviews);
@@ -108,7 +109,7 @@ public class CodeReviewsService {
     Users foundUser = validateUser(user);
 
     if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
-      throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
+      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
     }
 
     foundCodeReviews.delete();
@@ -123,7 +124,7 @@ public class CodeReviewsService {
     Users foundUser = validateUser(user);
 
     if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
-      throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
+      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
     }
 
     foundCodeReviews.updateCodeReview(codeReviewsRequestDto);
@@ -141,11 +142,11 @@ public class CodeReviewsService {
 
   public Users validateUser(Users user) {
     Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
-        () -> new NoSuchElementException("사용자가 존재하지 않습니다.")
+        () -> new CustomException(ErrorCode.USER_NOT_FOUND)
     );
 
     if (foundUser.getRole().equals(RoleEnum.WITHDRAW)) {
-      throw new NoSuchElementException("존재하지 않는 사용자입니다.");
+      throw new CustomException(ErrorCode.USER_NOT_FOUND);
     }
 
     return foundUser;
@@ -153,11 +154,11 @@ public class CodeReviewsService {
 
   public CodeReviews validateCodeReviewId(Long codeReviewsId) {
     CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
-        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
+        () -> new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_POST)
     );
 
     if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
-      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
+      throw new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_POST);
     }
 
     return foundCodeReviews;
@@ -188,7 +189,7 @@ public class CodeReviewsService {
                 .build()
         );
       } catch (Exception e) {
-        throw new RuntimeException("파일 업로드 오류가 발생했습니다.");
+        throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
       }
     }
 
@@ -211,7 +212,7 @@ public class CodeReviewsService {
       }
       code = result.toString(StandardCharsets.UTF_8.name());
     } catch (Exception e) {
-      throw new RuntimeException("파일 다운로드 오류가 발생했습니다.");
+      throw new CustomException(ErrorCode.FILE_DOWNLOAD_FAILED);
     }
 
     return code;
