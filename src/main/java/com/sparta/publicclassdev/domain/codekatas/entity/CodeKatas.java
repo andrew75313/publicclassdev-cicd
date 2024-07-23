@@ -22,8 +22,6 @@ public class CodeKatas extends Timestamped {
 
     private String contents;
 
-    private LocalDateTime createdAt;
-
     @OneToMany(mappedBy = "codeKatas")
     private List<Winners> winners;
 }

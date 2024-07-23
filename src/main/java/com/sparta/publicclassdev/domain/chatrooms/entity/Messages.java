@@ -20,8 +20,6 @@ public class Messages extends Timestamped {
 
     private String contents;
 
-    private LocalDateTime createdAt;
-
     @ManyToOne
     @JoinColumn(name = "users_id")
     private Users users;

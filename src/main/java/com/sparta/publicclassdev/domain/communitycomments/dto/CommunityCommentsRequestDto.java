@@ -1,5 +1,8 @@
 package com.sparta.publicclassdev.domain.communitycomments.dto;
 
-public class CommunityCommentsRequestDto {
+import lombok.Getter;
 
+@Getter
+public class CommunityCommentsRequestDto {
+    String contents;
 }
