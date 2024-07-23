@@ -10,6 +10,8 @@ import com.sparta.publicclassdev.domain.communitycomments.repository.CommunityCo
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +48,15 @@ public class CommunityCommentsService {
         repository.save(comment);
 
         return new CommunityCommentResponseDto(requestDto.getContents(), community.getId());
+    }
+
+    public List<CommunityCommentResponseDto> findComments(Long communityId) {
+        Communities community = checkCommunity(communityId);
+
+        List<CommunityComments> comment = repository.findByCommunity(community);
+        return comment.stream()
+            .map(CommunityComments -> new CommunityCommentResponseDto(CommunityComments.getContent(), CommunityComments.getCommunity().getId()))
+            .collect(Collectors.toList());
     }
 
     public Communities checkCommunity(Long communityId){

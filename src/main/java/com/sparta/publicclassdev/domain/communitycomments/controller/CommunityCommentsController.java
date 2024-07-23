@@ -6,10 +6,12 @@ import com.sparta.publicclassdev.domain.communitycomments.service.CommunityComme
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.dto.DataResponse;
 import com.sparta.publicclassdev.global.security.UserDetailsImpl;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,6 +48,14 @@ public class CommunityCommentsController {
             requestDto, user);
         return ResponseEntity.status(HttpStatus.OK)
             .body(new DataResponse<>(HttpStatus.OK.value(), "댓글 수정 완료", responseDto));
+    }
+
+    @GetMapping("/community/{coummityId}/comments")
+    public ResponseEntity<DataResponse<List<CommunityCommentResponseDto>>> findComments(@PathVariable Long coummityId){
+        List<CommunityCommentResponseDto> responseDto = service.findComments(coummityId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(new DataResponse<>(HttpStatus.OK.value(), "댓글 조회 완료", responseDto));
     }
 
 }

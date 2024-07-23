@@ -30,3 +30,9 @@ Authorization: {{Authorization}}
 {
   "contents" : "update contents"
 }
+
+### GET 게시글별 댓글 조회
+GET http://localhost:8080/api/community/2/comments
+Content-Type: application/json
+Authorization: {{Authorization}}
+
