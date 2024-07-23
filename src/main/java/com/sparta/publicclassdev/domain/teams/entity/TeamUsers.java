@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.group.entity;
+package com.sparta.publicclassdev.domain.teams.entity;
 
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import jakarta.persistence.Entity;
@@ -7,21 +7,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "boards")
-public class Boards {
+@Table(name = "team_users")
+public class TeamUsers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Users user;
+    @JoinColumn(name = "users_id")
+    private Users users;
 
-    @OneToOne
-    @JoinColumn(name = "groupinfo_id")
-    private GroupInfo groupInfo;
+    @ManyToOne
+    @JoinColumn(name = "teams_id")
+    private Teams teams;
 }

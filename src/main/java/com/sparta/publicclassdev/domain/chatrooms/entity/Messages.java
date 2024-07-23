@@ -1,6 +1,7 @@
-package com.sparta.publicclassdev.domain.group.entity;
+package com.sparta.publicclassdev.domain.chatrooms.entity;
 
 import com.sparta.publicclassdev.domain.users.entity.Users;
+import com.sparta.publicclassdev.global.entity.Timestamped;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,19 +9,24 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "columns")
-public class Columns {
+@Table(name = "messages")
+public class Messages extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "board_id")
-    private Boards boards;
+    private String contents;
+
+    private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Users user;
+    @JoinColumn(name = "users_id")
+    private Users users;
+
+    @ManyToOne
+    @JoinColumn(name = "chatrooms_id")
+    private ChatRooms chatRooms;
 }

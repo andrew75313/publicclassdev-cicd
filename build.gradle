@@ -40,6 +40,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // minio
+    implementation 'io.minio:minio:8.3.4'
 }
 
 tasks.named('test') {

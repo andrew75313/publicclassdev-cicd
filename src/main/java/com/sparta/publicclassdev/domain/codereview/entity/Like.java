@@ -17,10 +17,10 @@ public class Like {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private Users user;
 
     @ManyToOne
-    @JoinColumn(name = "code_review_comment_id")
+    @JoinColumn(name = "code_review_comments_id")
     private CodeReviewComment codeReviewComment;
 }
