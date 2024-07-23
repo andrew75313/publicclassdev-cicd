@@ -26,7 +26,7 @@ Authorization: {{Authorization}}
 }
 
 
-### PATCH 게시글 수정
+### PATCH 코드 리뷰 게시글 수정
 PATCH http://localhost:8080/api/codereviews/1
 Content-Type: application/json
 Authorization: {{Authorization}}
@@ -50,3 +50,27 @@ GET http://localhost:8080/api/codereviews/1
 Content-Type: application/json
 Authorization: {{Authorization}}
 
+
+### POST 코드 리뷰 댓글 생성
+POST http://localhost:8080/api/codereviews/1/comments
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+{
+  "contents" : "코드 리뷰 댓글 내용"
+}
+
+
+### PUT 코드 리뷰 댓글 수정
+PUT http://localhost:8080/api/codereviews/1/comments/1
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+{
+  "contents" : "코드 리뷰 댓글 내용 수정"
+}
+
+### DELETE 코드 리뷰 댓글 삭제
+DELETE http://localhost:8080/api/codereviews/1/comments/1
+Content-Type: application/json
+Authorization: {{Authorization}}
