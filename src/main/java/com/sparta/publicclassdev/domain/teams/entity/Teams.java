@@ -14,9 +14,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "teams")
+@Getter
+@NoArgsConstructor
 public class Teams extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +37,12 @@ public class Teams extends Timestamped {
 
     @OneToMany(mappedBy = "teams")
     private List<Winners> winners;
+
+    @Builder
+    public Teams(String name, List<TeamUsers> teamUsers, List<ChatRooms> chatRooms, List<Winners> winners) {
+        this.name = name;
+        this.teamUsers = teamUsers;
+        this.chatRooms = chatRooms;
+        this.winners = winners;
+    }
 }
