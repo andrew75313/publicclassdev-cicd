@@ -30,6 +30,21 @@ client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
 %}
 ###
 
+###
+GET http://localhost:8080/api/users/profiles
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+###
+PATCH http://localhost:8080/api/users/profiles
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+{
+  "name" : "홍길동",
+  "password": "Asdf1234!",
+  "intro": "자기소개"
+}
 
 
 
