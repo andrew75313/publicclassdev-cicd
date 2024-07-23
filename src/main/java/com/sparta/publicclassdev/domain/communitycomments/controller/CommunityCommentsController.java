@@ -5,12 +5,14 @@ import com.sparta.publicclassdev.domain.communitycomments.dto.CommunityCommentsR
 import com.sparta.publicclassdev.domain.communitycomments.service.CommunityCommentsService;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.dto.DataResponse;
+import com.sparta.publicclassdev.global.dto.MessageResponse;
 import com.sparta.publicclassdev.global.security.UserDetailsImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,6 +58,14 @@ public class CommunityCommentsController {
 
         return ResponseEntity.status(HttpStatus.OK)
             .body(new DataResponse<>(HttpStatus.OK.value(), "댓글 조회 완료", responseDto));
+    }
+
+    @DeleteMapping("/community/{communityId}/comments/{commentId}")
+    public ResponseEntity<MessageResponse> deleteComment(@PathVariable Long commentId, @PathVariable Long communityId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        Users user = userDetails.getUser();
+
+        service.deleteComment(commentId, communityId, user);
+        return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse(HttpStatus.OK.value(), "댓글 삭제 완료"));
     }
 
 }

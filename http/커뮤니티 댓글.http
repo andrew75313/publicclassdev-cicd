@@ -28,7 +28,7 @@ Content-Type: application/json
 Authorization: {{Authorization}}
 
 {
-  "contents" : "update contents"
+  "contents" : "updates contents"
 }
 
 ### GET 게시글별 댓글 조회
@@ -36,3 +36,7 @@ GET http://localhost:8080/api/community/2/comments
 Content-Type: application/json
 Authorization: {{Authorization}}
 
+### DELETE 댓글 삭제
+DELETE http://localhost:8080/api/community/2/comments/2
+Content-Type: application/json
+Authorization: {{Authorization}}

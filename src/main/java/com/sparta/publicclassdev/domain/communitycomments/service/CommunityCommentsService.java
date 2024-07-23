@@ -13,12 +13,15 @@ import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CommunityCommentsService {
 
+    private static final Logger log = LoggerFactory.getLogger(CommunityCommentsService.class);
     private final CommunityCommentsRepository repository;
     private final CommunitiesRepository communityRepository;
     public CommunityCommentResponseDto createComment(Long communityId, CommunityCommentsRequestDto requestDto, Users user) {
@@ -57,6 +60,17 @@ public class CommunityCommentsService {
         return comment.stream()
             .map(CommunityComments -> new CommunityCommentResponseDto(CommunityComments.getContent(), CommunityComments.getCommunity().getId()))
             .collect(Collectors.toList());
+    }
+
+    public void deleteComment(Long commentId, Long communityId, Users user) {
+        checkCommunity(communityId);
+        CommunityComments comment = checkComment(commentId);
+
+        if(user.equals(comment.getUser())){
+            throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+        }
+
+        repository.delete(comment);
     }
 
     public Communities checkCommunity(Long communityId){
