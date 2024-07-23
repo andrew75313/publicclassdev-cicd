@@ -12,15 +12,16 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "codereviewcomments")
 public class CodeReviewComment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private Users user;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "code_review_id")
-    private CodeReview codeReview;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private Users user;
+
+  @ManyToOne
+  @JoinColumn(name = "code_review_id")
+  private CodeReviews codeReviews;
 }
