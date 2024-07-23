@@ -22,14 +22,10 @@ import org.springframework.util.StringUtils;
 
 @Component
 public class JwtUtil {
-    // Header KEY 값
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String REFRESH = "RefreshToken";
-    // 사용자 권한 값의 KEY
     public static final String AUTHORIZATION_KEY = "auth";
-    // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
-    // 토큰 만료시간
     private final long ACCESSTOKEN_TIME = 60 * 30 * 1000L; // 30분
     private final long REFRESHTOKEN_TIME = 60 * 60 * 1000L * 336; // 336시간(2주)
 
@@ -38,7 +34,6 @@ public class JwtUtil {
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
-    // 로그 설정
     public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
 
     @PostConstruct
@@ -52,11 +47,11 @@ public class JwtUtil {
 
         return BEARER_PREFIX +
             Jwts.builder()
-                .setSubject(user.getEmail()) // 사용자 식별자값(ID)
-                .claim(AUTHORIZATION_KEY, user.getRole()) // 사용자 권한
-                .setExpiration(new Date(date.getTime() + ACCESSTOKEN_TIME)) // 만료 시간
-                .setIssuedAt(date) // 발급일
-                .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                .setSubject(user.getEmail())
+                .claim(AUTHORIZATION_KEY, user.getRole())
+                .setExpiration(new Date(date.getTime() + ACCESSTOKEN_TIME))
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
                 .compact();
     }
     public String createRefreshToken(Users user) {
@@ -64,11 +59,11 @@ public class JwtUtil {
 
         return BEARER_PREFIX +
             Jwts.builder()
-                .setSubject(user.getEmail()) // 사용자 식별자값(ID)
-                .claim(AUTHORIZATION_KEY, user.getRole()) // 사용자 권한
-                .setExpiration(new Date(date.getTime() + REFRESHTOKEN_TIME)) // 만료 시간
-                .setIssuedAt(date) // 발급일
-                .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                .setSubject(user.getEmail())
+                .claim(AUTHORIZATION_KEY, user.getRole())
+                .setExpiration(new Date(date.getTime() + REFRESHTOKEN_TIME))
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
                 .compact();
     }
 

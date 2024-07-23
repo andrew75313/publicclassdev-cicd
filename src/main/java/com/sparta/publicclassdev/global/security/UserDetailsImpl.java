@@ -1,7 +1,7 @@
 package com.sparta.publicclassdev.global.security;
 
-import com.sparta.publicclassdev.domain.user.entity.RoleEnum;
-import com.sparta.publicclassdev.domain.user.entity.Users;
+import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
+import com.sparta.publicclassdev.domain.users.entity.Users;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;

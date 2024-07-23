@@ -34,14 +34,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
         String reqToken = req.getHeader(HttpHeaders.AUTHORIZATION);
         if (StringUtils.hasText(reqToken)) {
-            // JWT 토큰 substring
             String tokenValue = jwtUtil.substringToken(reqToken);
             log.info(tokenValue);
 
             if (!jwtUtil.validateToken(tokenValue)) {
                 log.error("Token Error");
                 throw new CustomException(ErrorCode.INVALID_TOKEN);
-//                return;
             }
 
             Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
@@ -51,14 +49,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 log.error(e.getMessage());
                 throw new CustomException(ErrorCode.TOKEN_MISMATCH);
-//                return;
             }
         }
 
         filterChain.doFilter(req, res);
     }
 
-    // 인증 처리
     public void setAuthentication(String username) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication authentication = createAuthentication(username);
@@ -67,7 +63,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         SecurityContextHolder.setContext(context);
     }
 
-    // 인증 객체 생성
     private Authentication createAuthentication(String username) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

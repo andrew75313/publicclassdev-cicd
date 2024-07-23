@@ -2,11 +2,11 @@ POST http://localhost:8080/api/users/signup
 Content-Type: application/json
 
 {
-  "name" : "{{name}}",
-  "email" : "{{email}}",
-  "password" : "{{password}}",
-  "admin" : "{{admin}}",
-  "adminToken" : "{{adminToken}}"
+  "name" : "홍길동",
+  "email" : "asdf1234@email.com",
+  "password" : "Asdf1234!",
+  "admin" : "true",
+  "adminToken" : "admin1234!"
 }
 
 ###
@@ -20,10 +20,14 @@ POST http://localhost:8080/api/users/login
 Content-Type: application/json
 
 {
-  "email": "{{email}}",
-  "password": "{{password}}"
+  "email" : "asdf1234@email.com",
+  "password" : "Asdf1234!"
 }
 
+> {%
+client.global.set("Authorization", response.headers.valueOf("Authorization"));
+client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
+%}
 ###
 
 
