@@ -33,6 +33,7 @@ public enum ErrorCode {
 	// Community
 	NOT_FOUND_COMMUNITY_POST(400, "해당 게시물이 존재하지 않습니다."),
 	NOT_FOUND_CATEGORY(400, "해당 카테고리가 존재하지 않습니다"),
+	NOT_FOUND_COMMUNITY_COMMENT(400, "해당 댓글이 존재하지 않습니다."),
 
 	// CodeReview
 	NOT_FOUND_CODEREVIEW_POST(400, "해당 코드리뷰는 존재하지 않습니다."),

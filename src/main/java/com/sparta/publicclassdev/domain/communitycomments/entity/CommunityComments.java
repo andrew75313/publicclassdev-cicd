@@ -11,10 +11,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "communitycomments")
+@Getter
 @NoArgsConstructor
 public class CommunityComments extends Timestamped {
     @Id
@@ -36,5 +38,9 @@ public class CommunityComments extends Timestamped {
         this.community = community;
         this.user = user;
         this.content = content;
+    }
+
+    public void updateContent(String contents) {
+        this.content = contents;
     }
 }

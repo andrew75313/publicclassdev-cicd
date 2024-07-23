@@ -33,9 +33,30 @@ public class CommunityCommentsService {
         return new CommunityCommentResponseDto(requestDto.getContents(), community.getId());
     }
 
+    public CommunityCommentResponseDto updateComment(Long communityId, Long commentId, CommunityCommentsRequestDto requestDto, Users user) {
+        Communities community = checkCommunity(communityId);
+        CommunityComments comment = checkComment(commentId);
+
+        if(user.equals(comment.getUser())){
+            throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+        }
+
+        comment.updateContent(requestDto.getContents());
+
+        repository.save(comment);
+
+        return new CommunityCommentResponseDto(requestDto.getContents(), community.getId());
+    }
+
     public Communities checkCommunity(Long communityId){
         return communityRepository.findById(communityId).orElseThrow(
             () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
+        );
+    }
+
+    public CommunityComments checkComment(Long commentId){
+        return repository.findById(commentId).orElseThrow(
+            () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_COMMENT)
         );
     }
 }

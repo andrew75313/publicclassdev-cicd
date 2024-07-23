@@ -21,3 +21,12 @@ Authorization: {{Authorization}}
 {
   "contents" : "contents"
 }
+
+### PUT 게시글 댓글 업데이트
+PUT http://localhost:8080/api/community/2/comments/1
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+{
+  "contents" : "update contents"
+}
