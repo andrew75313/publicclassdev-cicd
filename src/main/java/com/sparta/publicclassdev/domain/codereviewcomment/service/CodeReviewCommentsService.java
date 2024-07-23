@@ -12,6 +12,7 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,26 @@ public class CodeReviewCommentsService {
     return new CodeReviewCommentsResponseDto(codeReviewComment, foundUser);
   }
 
+  @Transactional
+  public CodeReviewCommentsResponseDto updateCodeReviewComment(Long codeReviewsId,
+      Long codeReviewCommentsId, CodeReviewCommentsRequestDto codeReviewCommentsRequestDto,
+      Users user) {
+
+    Users foundUser = validateUser(user);
+
+    validateCodeReviewId(codeReviewsId);
+
+    CodeReviewComments foundCodeReviewComments = validateCodeReviewCommentId(codeReviewCommentsId);
+
+    if (!foundCodeReviewComments.getUser().getId().equals(foundUser.getId())) {
+      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+    }
+
+    foundCodeReviewComments.updateCodeReviewComment(codeReviewCommentsRequestDto);
+
+    return new CodeReviewCommentsResponseDto(foundCodeReviewComments, foundUser);
+  }
+
   public Users validateUser(Users user) {
     Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
         () -> new CustomException(ErrorCode.USER_NOT_FOUND)
@@ -65,5 +86,18 @@ public class CodeReviewCommentsService {
     }
 
     return foundCodeReviews;
+  }
+
+  public CodeReviewComments validateCodeReviewCommentId(Long codeReviewCommentId) {
+    CodeReviewComments foundCodeReviewComments = codeReviewCommentsRepository.findById(
+        codeReviewCommentId).orElseThrow(
+        () -> new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_POST)
+    );
+
+    if (foundCodeReviewComments.getStatus().equals(CodeReviewComments.Status.DELETED)) {
+      throw new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_POST);
+    }
+
+    return foundCodeReviewComments;
   }
 }
