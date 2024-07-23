@@ -35,6 +35,8 @@ public class Users {
     @Column(nullable = false)
     private String email;
 
+    private String intro;
+
     @Column(nullable = false)
     private String password;
     private Long point;
@@ -60,6 +62,12 @@ public class Users {
         this.email = email;
         this.password = password;
         this.role = role;
+    }
+
+    public void updateUsers(String name, String password, String intro) {
+        this.name = name;
+        this.password = password;
+        this.intro = intro;
     }
 
     public void updateRefreshToken(String refreshToken) {
