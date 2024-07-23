@@ -42,10 +42,14 @@ public class CommunitiesService {
         return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory());
     }
 
-    public void deletePost(Long communityId) {
+    public void deletePost(Long communityId, Users user) {
         Communities community = repository.findById(communityId).orElseThrow(
             () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
         );
+
+        if(community.getUser() != user){
+            throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+        }
 
         repository.delete(community);
     }
@@ -63,4 +67,5 @@ public class CommunitiesService {
 
         return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory());
     }
+
 }

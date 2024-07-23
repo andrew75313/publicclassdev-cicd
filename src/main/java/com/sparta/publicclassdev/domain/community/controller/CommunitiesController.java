@@ -46,8 +46,9 @@ public class CommunitiesController {
     }
 
     @DeleteMapping("/community/{communityId}")
-    public ResponseEntity<MessageResponse> deletePost(@PathVariable Long communityId){
-        service.deletePost(communityId);
+    public ResponseEntity<MessageResponse> deletePost(@PathVariable Long communityId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        Users user = userDetails.getUser();
+        service.deletePost(communityId, user);
         return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse(HttpStatus.OK.value(), "삭제 완료"));
     }
 
