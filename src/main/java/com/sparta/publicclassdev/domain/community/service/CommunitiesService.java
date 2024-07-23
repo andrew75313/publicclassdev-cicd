@@ -8,6 +8,8 @@ import com.sparta.publicclassdev.domain.community.repository.CommunitiesReposito
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,28 @@ public class CommunitiesService {
 
         community.updateContent(requestDto.getContent());
         repository.save(community);
+        return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory());
+    }
+
+    public void deletePost(Long communityId) {
+        Communities community = repository.findById(communityId).orElseThrow(
+            () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
+        );
+
+        repository.delete(community);
+    }
+
+    public List<CommunitiesResponseDto> findPosts() {
+        List<Communities> postList = repository.findAll();
+        return postList.stream().map(communities -> new CommunitiesResponseDto(communities.getTitle(), communities.getContent(), communities.getCategory()))
+            .collect(Collectors.toList());
+    }
+
+    public CommunitiesResponseDto findPost(Long communityId) {
+        Communities community = repository.findById(communityId).orElseThrow(
+            () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
+        );
+
         return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory());
     }
 }
