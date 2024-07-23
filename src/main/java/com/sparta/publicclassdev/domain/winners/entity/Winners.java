@@ -1,6 +1,7 @@
-package com.sparta.publicclassdev.domain.teams.entity;
+package com.sparta.publicclassdev.domain.winners.entity;
 
-import com.sparta.publicclassdev.domain.users.entity.Users;
+import com.sparta.publicclassdev.domain.codekatas.entity.CodeKatas;
+import com.sparta.publicclassdev.domain.teams.entity.Teams;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,15 +11,20 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "team_users")
-public class TeamUsers {
+@Table(name = "winners")
+public class Winners {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String code;
+
+    private double responseTime;
+
     @ManyToOne
-    @JoinColumn(name = "users_id")
-    private Users users;
+    @JoinColumn(name = "codekatas_id")
+    private CodeKatas codeKatas;
 
     @ManyToOne
     @JoinColumn(name = "teams_id")

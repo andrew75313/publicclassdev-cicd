@@ -17,10 +17,10 @@ public class CodeReviewComment {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private Users user;
 
     @ManyToOne
-    @JoinColumn(name = "code_review_id")
+    @JoinColumn(name = "code_reviews_id")
     private CodeReview codeReview;
 }
