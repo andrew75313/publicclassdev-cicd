@@ -107,11 +107,11 @@ public class CodeReviewCommentsService {
   public CodeReviewComments validateCodeReviewCommentId(Long codeReviewCommentId) {
     CodeReviewComments foundCodeReviewComments = codeReviewCommentsRepository.findById(
         codeReviewCommentId).orElseThrow(
-        () -> new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_POST)
+        () -> new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_COMMENT)
     );
 
     if (foundCodeReviewComments.getStatus().equals(CodeReviewComments.Status.DELETED)) {
-      throw new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_POST);
+      throw new CustomException(ErrorCode.NOT_FOUND_CODEREVIEW_COMMENT);
     }
 
     return foundCodeReviewComments;
