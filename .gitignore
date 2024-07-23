@@ -37,3 +37,4 @@ out/
 .vscode/
 
 application-secrets.yml
+http-client.private.env.json
