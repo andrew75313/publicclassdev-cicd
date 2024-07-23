@@ -28,7 +28,7 @@ public enum ErrorCode {
 	TOKEN_MISMATCH(401, "토큰이 일치하지 않습니다."),
 	RE_LOGIN_REQUIRED(401, "재로그인 해주세요"),
 	USER_WITHDRAW(403, "이미 탈퇴한 회원입니다."),
-	NAME_NOT_UNIQUE(409,"사용 중인 이름입니다.");
+	NAME_NOT_UNIQUE(409,"사용 중인 이름입니다."),
 
 	// Community
 	NOT_FOUND_CATEGORY(400, "해당 카테고리가 존재하지 않습니다");
