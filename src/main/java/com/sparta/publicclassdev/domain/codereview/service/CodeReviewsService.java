@@ -148,4 +148,30 @@ public class CodeReviewsService {
 
     return new CodeReviewsDetailResponseDto(foundCodeReviews, code, foundUser);
   }
+
+  @Transactional
+  public void deleteCodeReview(Long codeReviewsId, Users user) {
+
+    CodeReviews foundCodeReviews = codeReviewsRepository.findById(codeReviewsId).orElseThrow(
+        () -> new NoSuchElementException("코드리뷰가 존재하지 않습니다.")
+    );
+
+    if (foundCodeReviews.getStatus().equals(Status.DELETED)) {
+      throw new NoSuchElementException("이미 삭제된 코드리뷰입니다.");
+    }
+
+    Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
+        () -> new NoSuchElementException("사용자가 존재하지 않습니다.")
+    );
+
+    if (foundUser.getRole().equals(RoleEnum.WITHDRAW)) {
+      throw new NoSuchElementException("존재하지 않는 사용자입니다.");
+    }
+
+    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
+      throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
+    }
+
+    foundCodeReviews.delete();
+  }
 }

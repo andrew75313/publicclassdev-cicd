@@ -6,12 +6,14 @@ import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
 import com.sparta.publicclassdev.domain.codereview.service.CodeReviewsService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
+import com.sparta.publicclassdev.global.dto.MessageResponse;
 import com.sparta.publicclassdev.global.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,5 +59,17 @@ public class CodeReviewsController {
 
     return ResponseEntity.status(HttpStatus.OK)
         .body(new DataResponse<>(200, "코드 리뷰 게시글 조회 완료", response));
+  }
+
+  @DeleteMapping("/codereviews/{codeReviewsId}")
+  public ResponseEntity<MessageResponse> deleteCodeReivew(
+      @PathVariable(name = "codeReviewsId") Long codeReviewsId,
+      @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+    codeReviewsService.deleteCodeReview(codeReviewsId, userDetails.getUser());
+
+    return ResponseEntity.status(HttpStatus.NO_CONTENT)
+        .body(new MessageResponse(204, "코드 리뷰 게시글 삭제 완료"));
+
   }
 }
