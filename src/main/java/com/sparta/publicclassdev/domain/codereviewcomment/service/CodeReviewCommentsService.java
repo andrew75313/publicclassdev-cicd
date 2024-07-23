@@ -64,6 +64,22 @@ public class CodeReviewCommentsService {
     return new CodeReviewCommentsResponseDto(foundCodeReviewComments, foundUser);
   }
 
+  @Transactional
+  public void deleteCodeReviewComment(Long codeReviewsId, Long codeReviewCommentsId, Users user) {
+
+    Users foundUser = validateUser(user);
+
+    validateCodeReviewId(codeReviewsId);
+
+    CodeReviewComments foundCodeReviewComments = validateCodeReviewCommentId(codeReviewCommentsId);
+
+    if (!foundCodeReviewComments.getUser().getId().equals(foundUser.getId())) {
+      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+    }
+
+    foundCodeReviewComments.delete();
+  }
+
   public Users validateUser(Users user) {
     Users foundUser = usersRepository.findByEmail(user.getEmail()).orElseThrow(
         () -> new CustomException(ErrorCode.USER_NOT_FOUND)
