@@ -50,7 +50,7 @@ public class CodeReviewsService {
       throw new NoSuchElementException("존재하지 않는 사용자입니다.");
     }
 
-    String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCode().split("#"))
+    String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCategory().split("#"))
         .map(s -> s.replace(" ", "").toLowerCase())
         .filter(s -> !s.isEmpty())
         .collect(Collectors.joining(" #"));
@@ -60,6 +60,7 @@ public class CodeReviewsService {
         .category(categories)
         .contents(codeReviewsRequestDto.getContents())
         .status(Status.ACTIVE)
+        .user(foundUser)
         .build();
 
     codeReviewsRepository.save(codeReview);
@@ -201,7 +202,7 @@ public class CodeReviewsService {
 
     foundCodeReviews.updateCodeReview(codeReviewsRequestDto);
 
-    String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCode().split("#"))
+    String categories = "#" + Arrays.stream(codeReviewsRequestDto.getCategory().split("#"))
         .map(s -> s.replace(" ", "").toLowerCase())
         .filter(s -> !s.isEmpty())
         .collect(Collectors.joining(" #"));
