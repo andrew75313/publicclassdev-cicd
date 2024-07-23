@@ -43,6 +43,11 @@ dependencies {
 
     // minio
     implementation 'io.minio:minio:8.3.4'
+
+    //redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    //redis 캐시
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
 }
 
 tasks.named('test') {
