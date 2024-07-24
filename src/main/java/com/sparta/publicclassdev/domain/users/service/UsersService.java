@@ -19,18 +19,22 @@ import com.sparta.publicclassdev.global.CacheNames;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import com.sparta.publicclassdev.global.security.JwtUtil;
+import io.jsonwebtoken.Claims;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UsersService {
     private final UsersRepository usersRepository;
     private final CommunitiesRepository communitiesRepository;
@@ -139,14 +143,29 @@ public class UsersService {
         }
         user.updateRole(RoleEnum.WITHDRAW);
     }
-    @CachePut(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+ #p0.getEmail()")
-    public AuthResponseDto reissueToken(Users user, RoleEnum role, String refreshToken) {
-        if(!redisDao.getRefreshToken(user.getEmail()).equals(refreshToken)) {
+    public AuthResponseDto reissueToken(String refreshToken) {
+        String substringToken = jwtUtil.substringToken(refreshToken);
+        Claims info = jwtUtil.getUserInfoFromToken(substringToken);
+        String email = info.getSubject();
+        return reissueTokenWithEmail(email, refreshToken);
+    }
+    @CachePut(cacheNames = CacheNames.USERBYEMAIL, key = "'login' + #p0")
+    public AuthResponseDto reissueTokenWithEmail(String email, String refreshToken) {
+        Users user = usersRepository.findByEmail(email).orElseThrow(() ->
+            new UsernameNotFoundException("Not Found " + email));
+
+        log.info("Received refresh token: " + refreshToken);
+        log.info("Stored refresh token: " + redisDao.getRefreshToken(email));
+
+        if (!redisDao.getRefreshToken(email).equals(refreshToken)) {
             throw new CustomException(ErrorCode.TOKEN_MISMATCH);
         }
-        String accessToken = jwtUtil.createAccessToken(user);
+
+        String newAccessToken = jwtUtil.createAccessToken(user);
         String newRefreshToken = jwtUtil.createRefreshToken(user);
-        redisDao.setRefreshToken(user.getEmail(), newRefreshToken, jwtUtil.getREFRESHTOKEN_TIME());
-        return new AuthResponseDto(accessToken, newRefreshToken);
+
+        redisDao.setRefreshToken(email, newRefreshToken, jwtUtil.getREFRESHTOKEN_TIME());
+
+        return new AuthResponseDto(newAccessToken, newRefreshToken);
     }
 }
