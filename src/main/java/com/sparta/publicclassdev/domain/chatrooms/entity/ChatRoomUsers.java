@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 
 @Entity
 @Table(name = "chatroomusers")
@@ -24,9 +25,9 @@ public class ChatRoomUsers {
     @JoinColumn(name = "chatrooms_id")
     private ChatRooms chatRooms;
 
-    public void setChatRooms(ChatRooms chatRooms) {
-    }
-
-    public void setUsers(Users users) {
+    @Builder
+    public ChatRoomUsers(Users users, ChatRooms chatRooms) {
+        this.users = users;
+        this.chatRooms = chatRooms;
     }
 }

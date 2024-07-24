@@ -14,13 +14,11 @@ import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,12 +32,13 @@ public class TeamsService {
     private final ChatRoomsRepository chatRoomsRepository;
     private final ChatRoomUsersRepository chatRoomUsersRepository;
 
-    private static final List<String> Modifier = Arrays.asList(
+    private static final List<String> Modifier = List.of(
         "Agile", "Brave", "Calm", "Daring", "Eager", "Fierce", "Gentle", "Heroic", "Jolly", "Keen"
     );
 
-    private static final List<String> Label = Arrays.asList(
-        "Warriors", "Knights", "Mavericks", "Pioneers", "Rangers", "Samurais", "Titans", "Vikings", "Wizards", "Yankees"
+    private static final List<String> Label = List.of(
+        "Warriors", "Knights", "Mavericks", "Pioneers", "Rangers", "Samurais", "Titans", "Vikings",
+        "Wizards", "Yankees"
     );
 
     private final Random RANDOM = new Random();
@@ -69,15 +68,14 @@ public class TeamsService {
 
         Integer teamSize = 3;
 
-        Teams teams = Teams.builder().build();
+        Teams teams = Teams.builder()
+            .name(randomTeamName())
+            .build();
         teamsRepository.save(teams);
 
-        String teamName = "Team " + teams.getId();
-        teams.setName(teamName);
-        teamsRepository.save(teams);
-
-        ChatRooms chatRooms = new ChatRooms();
-        chatRooms.setTeams(teams);
+        ChatRooms chatRooms = ChatRooms.builder()
+            .teams(teams)
+            .build();
         chatRoomsRepository.save(chatRooms);
 
         List<Users> teamMembers = new ArrayList<>();
@@ -92,9 +90,10 @@ public class TeamsService {
             teamUsersRepository.save(teamUsers);
             teamUsersRepository.delete(teamUsers);
 
-            ChatRoomUsers chatRoomUsers = new ChatRoomUsers();
-            chatRoomUsers.setChatRooms(chatRooms);
-            chatRoomUsers.setUsers(users);
+            ChatRoomUsers chatRoomUsers = ChatRoomUsers.builder()
+                .chatRooms(chatRooms)
+                .users(users)
+                .build();
             chatRoomUsersRepository.save(chatRoomUsers);
         }
         return new TeamResponseDto(teams, teamMembers);

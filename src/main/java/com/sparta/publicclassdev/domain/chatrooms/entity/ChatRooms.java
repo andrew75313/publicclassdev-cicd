@@ -11,6 +11,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
+import lombok.Builder;
 
 @Entity
 @Table(name = "chatrooms")
@@ -29,6 +30,8 @@ public class ChatRooms {
     @OneToMany(mappedBy = "chatRooms")
     private List<Messages> messages;
 
-    public void setTeams(Teams teams) {
+    @Builder
+    public ChatRooms(Teams teams) {
+        this.teams = teams;
     }
 }
