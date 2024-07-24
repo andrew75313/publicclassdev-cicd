@@ -42,24 +42,24 @@ client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
 
 ###
 # curl -X GET --location "http://localhost:8080/api/users/profiles"
-#    -H "Content-Type: application/json"
 #    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
 GET http://localhost:8080/api/users/profiles
-Content-Type: application/json
 Authorization: {{Authorization}}
+Content-Type: application/json
 
 ###
 # curl -X PATCH --location "http://localhost:8080/api/users/profiles"
-#    -H "Content-Type: application/json"
 #    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
 #    -d '{
 #          "name" : "홍길동",
 #          "password": "Asdf1111!",
 #          "intro": "자기소개"
 #        }'
 PATCH http://localhost:8080/api/users/profiles
+Authorization: {{Authorization}}
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmMTIzNEBlbWFpbC5jb20iLCJhdXRoIjoiQURNSU4iLCJleHAiOjE3MjE3MjI1MTYsImlhdCI6MTcyMTcyMDcxNn0.IQyHiaFPOo9KB2TRVLccB7i3BO7PHar4r6a0Gt23-qw
 
 {
   "name" : "홍길동",
@@ -67,5 +67,50 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmMTIzNEBlbWFpbC5jb20iL
   "intro" : "자기소개"
 }
 
+###
+# curl -X POST --location "http://localhost:8080/api/users/logout"
+#    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
+POST http://localhost:8080/api/users/logout
+Authorization: {{Authorization}}
+Content-Type: application/json
 
+> {%
+  client.global.clear("Authorization")
+  client.global.clear("RefreshToken")
+%}
 
+###
+# curl -X POST --location "http://localhost:8080/api/users/withdraw"
+#    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
+#    -d '{
+#          "email" : "asdf1234@email.com",
+#          "password" : "Asdf1111!"
+#        }'
+POST http://localhost:8080/api/users/withdraw
+Authorization: {{Authorization}}
+Content-Type: application/json
+
+{
+  "email": "asdf1234@email.com",
+  "password": "Asdf1111!"
+}
+> {%
+  client.global.clear("Authorization")
+  client.global.clear("RefreshToken")
+%}
+
+###
+POST http://localhost:8080/api/users/reissue-token
+Authorization: {{Authorization}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{RefreshToken}}"
+}
+
+> {%
+  client.global.set("Authorization", response.headers.valueOf("Authorization"));
+  client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
+%}

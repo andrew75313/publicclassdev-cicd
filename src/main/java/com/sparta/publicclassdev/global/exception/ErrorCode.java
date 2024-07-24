@@ -28,7 +28,7 @@ public enum ErrorCode {
 	TOKEN_MISMATCH(401, "토큰이 일치하지 않습니다."),
 	RE_LOGIN_REQUIRED(401, "재로그인 해주세요"),
 	USER_WITHDRAW(403, "이미 탈퇴한 회원입니다."),
-	NAME_NOT_UNIQUE(409,"사용 중인 이름입니다."),
+
 
 	// Community
 	NOT_FOUND_COMMUNITY_POST(400, "해당 게시물이 존재하지 않습니다."),
@@ -41,7 +41,12 @@ public enum ErrorCode {
 
 	// File
 	FILE_UPLOAD_FAILED(500, "파일 업로드에 실패했습니다."),
-	FILE_DOWNLOAD_FAILED(500, "파일 다운로드에 실패했습니다.");
+	FILE_DOWNLOAD_FAILED(500, "파일 다운로드에 실패했습니다."),
+
+	// User
+	NAME_NOT_UNIQUE(409,"사용 중인 이름입니다."),
+	USER_LOGOUT(403, "이미 로그아웃한 회원입니다."),
+	TOKEN_NOTFOUND(404, "토큰을 찾을 수 없습니다.");
 
 	private final Integer status;
 	private final String message;
