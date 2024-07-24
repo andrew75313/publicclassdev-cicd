@@ -58,7 +58,7 @@ public class UsersController {
     public ResponseEntity<DataResponse<UpdateProfileResponseDto>> updateProfile(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid @RequestBody ProfileRequestDto requestDto) {
-        UpdateProfileResponseDto responseDto = usersService.updateProfile(userDetails.getUser(), requestDto);
+        UpdateProfileResponseDto responseDto = usersService.updateProfile(userDetails.getUser().getId(), requestDto);
         DataResponse<UpdateProfileResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "프로필 수정 완료", responseDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -67,6 +67,14 @@ public class UsersController {
         String accessToken = request.getHeader(JwtUtil.AUTHORIZATION_HEADER);
         usersService.logout(accessToken, userDetails.getUser().getEmail());
         MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "로그아웃");
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+    }
+    @PostMapping("/withdraw")
+    public ResponseEntity<MessageResponse> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody LoginRequestDto requestDto, HttpServletRequest request) {
+        // email과 password만 필요하기 때문에 같은 내용의 dto객체를 새로 만드는 대신 LoginRequestDto 재활용
+        usersService.withdraw(userDetails.getUser().getId(), requestDto);
+        logout(userDetails, request);
+        MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "회원탈퇴 성공");
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 }

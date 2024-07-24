@@ -84,7 +84,6 @@ public class UsersService {
         LoginResponseDto responseDto = new LoginResponseDto(jwtUtil.createAccessToken(user),
             jwtUtil.createRefreshToken(user));
         redisDao.setRefreshToken(email, responseDto.getRefreshToken(), jwtUtil.getREFRESHTOKEN_TIME());
-        usersRepository.save(user);
         return responseDto;
     }
 
@@ -96,10 +95,11 @@ public class UsersService {
         return new ProfileResponseDto(user, recentResponseDto);
     }
 
-    public UpdateProfileResponseDto updateProfile(Users user, ProfileRequestDto requestDto) {
+    @Transactional
+    public UpdateProfileResponseDto updateProfile(Long id, ProfileRequestDto requestDto) {
+        Users user = findById(id);
         String password = passwordEncoder.encode(requestDto.getPassword());
         user.updateUsers(requestDto.getName(), password, requestDto.getIntro());
-        usersRepository.save(user);
         return new UpdateProfileResponseDto(user);
     }
 
@@ -120,5 +120,22 @@ public class UsersService {
         } else {
             throw new CustomException(ErrorCode.USER_LOGOUT);
         }
+    }
+
+    @Transactional
+    public void withdraw(Long id, LoginRequestDto requestDto) {
+        String email = requestDto.getEmail();
+        String password = requestDto.getPassword();
+        Users user = findById(id);
+        if(!email.equals(user.getEmail())) {
+            throw new CustomException(ErrorCode.CHECK_EMAIL);
+        }
+        if((!passwordEncoder.matches(password, user.getPassword()))) {
+            throw new CustomException(ErrorCode.INCORRECT_PASSWORD);
+        }
+        if(user.getRole().equals(RoleEnum.WITHDRAW)) {
+            throw new CustomException(ErrorCode.USER_WITHDRAW);
+        }
+        user.updateRole(RoleEnum.WITHDRAW);
     }
 }

@@ -92,7 +92,7 @@ public class JwtUtil {
             return tokenValue.substring(7);
         }
         logger.error("Not Found Token");
-        throw new NullPointerException("Not Found Token");
+        throw new CustomException(ErrorCode.TOKEN_NOTFOUND);
     }
 
     public boolean validateToken(String token) {

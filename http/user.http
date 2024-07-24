@@ -42,24 +42,24 @@ client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
 
 ###
 # curl -X GET --location "http://localhost:8080/api/users/profiles"
-#    -H "Content-Type: application/json"
 #    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
 GET http://localhost:8080/api/users/profiles
-Content-Type: application/json
 Authorization: {{Authorization}}
+Content-Type: application/json
 
 ###
 # curl -X PATCH --location "http://localhost:8080/api/users/profiles"
-#    -H "Content-Type: application/json"
 #    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
 #    -d '{
 #          "name" : "홍길동",
 #          "password": "Asdf1111!",
 #          "intro": "자기소개"
 #        }'
 PATCH http://localhost:8080/api/users/profiles
-Content-Type: application/json
 Authorization: {{Authorization}}
+Content-Type: application/json
 
 {
   "name" : "홍길동",
@@ -69,12 +69,28 @@ Authorization: {{Authorization}}
 
 ###
 # curl -X POST --location "http://localhost:8080/api/users/logout"
-#    -H "Content-Type: application/json"
 #    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
 POST http://localhost:8080/api/users/logout
-Content-Type: application/json
 Authorization: {{Authorization}}
+Content-Type: application/json
 
 ###
+# curl -X POST --location "http://localhost:8080/api/users/withdraw"
+#    -H "Authorization: Bearer accesstoken"
+#    -H "Content-Type: application/json"
+#    -d '{
+#          "email" : "asdf1234@email.com",
+#          "password" : "Asdf1111!"
+#        }'
+POST http://localhost:8080/api/users/withdraw
+Authorization: {{Authorization}}
+Content-Type: application/json
 
+{
+  "email": "asdf1234@email.com",
+  "password": "Asdf1111!"
+}
+
+###
 

@@ -42,7 +42,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             String blackList = redisDao.getBlackList(tokenValue);
             if(blackList != null) {
                 if(blackList.equals("logout")) {
-                    throw new CustomException(ErrorCode.INVALID_TOKEN);
+                    throw new CustomException(ErrorCode.USER_LOGOUT);
                 }
             }
             if (!jwtUtil.validateToken(tokenValue)) {
