@@ -29,4 +29,6 @@ public class ChatRooms {
     @OneToMany(mappedBy = "chatRooms")
     private List<Messages> messages;
 
+    public void setTeams(Teams teams) {
+    }
 }

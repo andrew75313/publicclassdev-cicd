@@ -23,4 +23,10 @@ public class ChatRoomUsers {
     @ManyToOne
     @JoinColumn(name = "chatrooms_id")
     private ChatRooms chatRooms;
+
+    public void setChatRooms(ChatRooms chatRooms) {
+    }
+
+    public void setUsers(Users users) {
+    }
 }

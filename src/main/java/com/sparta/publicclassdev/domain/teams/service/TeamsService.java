@@ -1,5 +1,9 @@
 package com.sparta.publicclassdev.domain.teams.service;
 
+import com.sparta.publicclassdev.domain.chatrooms.entity.ChatRoomUsers;
+import com.sparta.publicclassdev.domain.chatrooms.entity.ChatRooms;
+import com.sparta.publicclassdev.domain.chatrooms.repository.ChatRoomUsersRepository;
+import com.sparta.publicclassdev.domain.chatrooms.repository.ChatRoomsRepository;
 import com.sparta.publicclassdev.domain.teams.dto.TeamResponseDto;
 import com.sparta.publicclassdev.domain.teams.entity.TeamUsers;
 import com.sparta.publicclassdev.domain.teams.entity.Teams;
@@ -16,6 +20,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,21 +31,27 @@ public class TeamsService {
     private final TeamsRepository teamsRepository;
     private final TeamUsersRepository teamUsersRepository;
     private final UsersRepository usersRepository;
+    private final ChatRoomsRepository chatRoomsRepository;
+    private final ChatRoomUsersRepository chatRoomUsersRepository;
 
-    private static final List<String> ADJECTIVES = Arrays.asList(
+    private static final List<String> Modifier = Arrays.asList(
         "Agile", "Brave", "Calm", "Daring", "Eager", "Fierce", "Gentle", "Heroic", "Jolly", "Keen"
     );
 
-    private static final List<String> NOUNS = Arrays.asList(
+    private static final List<String> Label = Arrays.asList(
         "Warriors", "Knights", "Mavericks", "Pioneers", "Rangers", "Samurais", "Titans", "Vikings", "Wizards", "Yankees"
     );
 
-    private static final Random RANDOM = new Random();
+    private final Random RANDOM = new Random();
 
-    public static String generateRandomTeamName() {
-        String adjective = ADJECTIVES.get(RANDOM.nextInt(ADJECTIVES.size()));
-        String noun = NOUNS.get(RANDOM.nextInt(NOUNS.size()));
-        return adjective + " " + noun;
+    private String randomTeamName() {
+        String teamName;
+        do {
+            String modifier = Modifier.get(RANDOM.nextInt(Modifier.size()));
+            String label = Label.get(RANDOM.nextInt(Label.size()));
+            teamName = modifier + " " + label;
+        } while (teamsRepository.existsByName(teamName));
+        return teamName;
     }
 
     @Transactional
@@ -65,6 +76,10 @@ public class TeamsService {
         teams.setName(teamName);
         teamsRepository.save(teams);
 
+        ChatRooms chatRooms = new ChatRooms();
+        chatRooms.setTeams(teams);
+        chatRoomsRepository.save(chatRooms);
+
         List<Users> teamMembers = new ArrayList<>();
         for (int i = 0; i < teamSize && !waitUser.isEmpty(); i++) {
             Users users = waitUser.remove(0).getUsers();
@@ -76,6 +91,11 @@ public class TeamsService {
                 .build();
             teamUsersRepository.save(teamUsers);
             teamUsersRepository.delete(teamUsers);
+
+            ChatRoomUsers chatRoomUsers = new ChatRoomUsers();
+            chatRoomUsers.setChatRooms(chatRooms);
+            chatRoomUsers.setUsers(users);
+            chatRoomUsersRepository.save(chatRoomUsers);
         }
         return new TeamResponseDto(teams, teamMembers);
     }
