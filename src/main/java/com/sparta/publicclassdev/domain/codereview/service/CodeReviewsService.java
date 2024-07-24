@@ -4,6 +4,7 @@ import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsDetailResponse
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsWithUserResponseDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
@@ -16,6 +17,7 @@ import com.sparta.publicclassdev.global.exception.ErrorCode;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import jakarta.persistence.Tuple;
 import jakarta.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -68,17 +70,11 @@ public class CodeReviewsService {
 
     Pageable pageable = PageRequest.of(page, SizingConstants.PAGE_SIZE);
 
-    Page<CodeReviews> codeReviewsPage = codeReviewsRepository.findAllWhereStatusIsActiveOrderByCreatedAtDesc(
+    Page<Tuple> codeReviewsPage = codeReviewsRepository.findAllWhereStatusIsActiveOrderByCreatedAtDesc(
         pageable);
 
-    List<CodeReviews> codeReviewsList = codeReviewsPage.getContent();
-
-    List<CodeReviewsResponseDto> responseDtoList = codeReviewsList.stream()
-        .map(codeReviews -> {
-          Users foundUser = usersRepository.findById(codeReviews.getUser().getId())
-              .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-          return new CodeReviewsResponseDto(codeReviews, foundUser);
-        })
+    List<CodeReviewsWithUserResponseDto> responseDtoList = codeReviewsPage.getContent().stream()
+        .map(CodeReviewsWithUserResponseDto::new)
         .collect(Collectors.toList());
 
     return new CodeReviewsListResponseDto(
