@@ -18,7 +18,7 @@ Content-Type: application/json
 Authorization: {{Authorization}}
 
 {
-  "title": "title",
+  "title": "Title14",
   "content": "contents",
   "category": "GOSSIP"
 }
@@ -44,5 +44,10 @@ Authorization: {{Authorization}}
 
 ### DELETE 게시글 삭제
 DELETE http://localhost:8080/api/community/1
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+### GET 게시글 검색
+GET http://localhost:8080/api/community/search?keyword=ti&page=1
 Content-Type: application/json
 Authorization: {{Authorization}}

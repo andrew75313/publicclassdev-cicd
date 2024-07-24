@@ -8,21 +8,19 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.dto.DataResponse;
 import com.sparta.publicclassdev.global.dto.MessageResponse;
 import com.sparta.publicclassdev.global.security.UserDetailsImpl;
-import com.sun.security.auth.UserPrincipal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -62,5 +60,12 @@ public class CommunitiesController {
     public ResponseEntity<DataResponse<CommunitiesResponseDto>> findPost(@PathVariable Long communityId){
         CommunitiesResponseDto responseDto = service.findPost(communityId);
         return ResponseEntity.status(HttpStatus.OK).body(new DataResponse<>(HttpStatus.OK.value(), "단건 조회 완료", responseDto));
+    }
+
+    @GetMapping("/community/search")
+    public ResponseEntity<DataResponse<List<CommunitiesResponseDto>>> searchPost
+        (@RequestParam("keyword") String keyword, @RequestParam("page") int page){
+        List<CommunitiesResponseDto> responseDto = service.searchPost(keyword, page);
+        return ResponseEntity.status(HttpStatus.OK).body(new DataResponse<>(HttpStatus.OK.value(), " 조회 완료", responseDto));
     }
 }

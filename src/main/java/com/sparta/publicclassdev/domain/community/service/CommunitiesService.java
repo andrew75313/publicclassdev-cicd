@@ -11,6 +11,9 @@ import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -68,4 +71,12 @@ public class CommunitiesService {
     }
 
 
+    public List<CommunitiesResponseDto> searchPost(String keyword, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Communities> communityPage = repository.findByTitleContainingIgnoreCase(keyword, pageable);
+
+        return communityPage.stream()
+            .map(communities -> new CommunitiesResponseDto(communities.getTitle(), communities.getContent(), communities.getCategory()))
+            .collect(Collectors.toList());
+    }
 }
