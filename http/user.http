@@ -102,15 +102,16 @@ Content-Type: application/json
 %}
 
 ###
+# curl -X POST --location "http://localhost:8080/api/users/reissue-token"
+#    -H "Content-Type: application/json"
+#    -d '{
+#          "refreshToken": "{{RefreshToken}}"
+#        }'
 POST http://localhost:8080/api/users/reissue-token
-Authorization: {{Authorization}}
 Content-Type: application/json
 
 {
   "refreshToken": "{{RefreshToken}}"
 }
 
-> {%
-  client.global.set("Authorization", response.headers.valueOf("Authorization"));
-  client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
-%}
+###
