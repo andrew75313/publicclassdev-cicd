@@ -130,9 +130,7 @@ public class CodeReviewsService {
 
     Users foundUser = validateUser(user);
 
-    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
-      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
-    }
+    validateOwnership(foundCodeReviews, foundUser);
 
     foundCodeReviews.delete();
   }
@@ -145,9 +143,7 @@ public class CodeReviewsService {
 
     Users foundUser = validateUser(user);
 
-    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
-      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
-    }
+    validateOwnership(foundCodeReviews, foundUser);
 
     foundCodeReviews.updateCodeReview(codeReviewsRequestDto);
 
@@ -184,6 +180,16 @@ public class CodeReviewsService {
     }
 
     return foundCodeReviews;
+  }
+
+  public void validateOwnership(CodeReviews codeReviews, Users user) {
+    Users writer = codeReviews.getUser();
+
+    if (!writer.getRole().equals(RoleEnum.ADMIN)) {
+      if (!writer.getId().equals(user.getId())) {
+        throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+      }
+    }
   }
 
   public String arrangeCategory(String category) {
