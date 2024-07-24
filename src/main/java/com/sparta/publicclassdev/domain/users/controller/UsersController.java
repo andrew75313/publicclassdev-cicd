@@ -1,9 +1,10 @@
 package com.sparta.publicclassdev.domain.users.controller;
 
-import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
-import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
+import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.ReissueTokenRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.UpdateProfileResponseDto;
@@ -12,6 +13,7 @@ import com.sparta.publicclassdev.global.dto.DataResponse;
 import com.sparta.publicclassdev.global.dto.MessageResponse;
 import com.sparta.publicclassdev.global.security.JwtUtil;
 import com.sparta.publicclassdev.global.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +40,8 @@ public class UsersController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<MessageResponse> login(@Valid @RequestBody LoginRequestDto requestDto, HttpServletResponse response) {
-        LoginResponseDto responseDto = usersService.login(requestDto);
+    public ResponseEntity<MessageResponse> login(@Valid @RequestBody AuthRequestDto requestDto, HttpServletResponse response) {
+        AuthResponseDto responseDto = usersService.login(requestDto);
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, responseDto.getAccessToken());
         response.addHeader(JwtUtil.REFRESH, responseDto.getRefreshToken());
         MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "로그인 성공");
@@ -55,8 +57,32 @@ public class UsersController {
     public ResponseEntity<DataResponse<UpdateProfileResponseDto>> updateProfile(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid @RequestBody ProfileRequestDto requestDto) {
-        UpdateProfileResponseDto responseDto = usersService.updateProfile(userDetails.getUser(), requestDto);
+        UpdateProfileResponseDto responseDto = usersService.updateProfile(userDetails.getUser().getId(), requestDto);
         DataResponse<UpdateProfileResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "프로필 수정 완료", responseDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<MessageResponse> logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request) {
+        String accessToken = request.getHeader(JwtUtil.AUTHORIZATION_HEADER);
+        usersService.logout(accessToken, userDetails.getUser().getEmail());
+        MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "로그아웃");
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+    }
+    @PostMapping("/withdraw")
+    public ResponseEntity<MessageResponse> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody AuthRequestDto requestDto, HttpServletRequest request) {
+        usersService.withdraw(userDetails.getUser().getId(), requestDto);
+        logout(userDetails, request);
+        MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "회원탈퇴 성공");
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+    }
+    @PostMapping("/reissue-token")
+    public ResponseEntity<MessageResponse> reissueToken(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestBody ReissueTokenRequestDto requestDto,
+        HttpServletResponse response) {
+        AuthResponseDto responseDto = usersService.reissueToken(userDetails.getUser(), userDetails.getUser().getRole(), requestDto.getRefreshToken());
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, responseDto.getAccessToken());
+        response.addHeader(JwtUtil.REFRESH, responseDto.getRefreshToken());
+        MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "토큰 재발급 성공");
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 }

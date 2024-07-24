@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.global.security;
 
+import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
@@ -23,10 +24,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
+    private final UserRedisDao redisDao;
 
-    public JwtAuthorizationFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
+    public JwtAuthorizationFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService, UserRedisDao redisDao) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.redisDao = redisDao;
     }
 
     @Override
@@ -36,7 +39,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(reqToken)) {
             String tokenValue = jwtUtil.substringToken(reqToken);
             log.info(tokenValue);
-
+            String blackList = redisDao.getBlackList(tokenValue);
+            if(blackList != null) {
+                if(blackList.equals("logout")) {
+                    throw new CustomException(ErrorCode.USER_LOGOUT);
+                }
+            }
             if (!jwtUtil.validateToken(tokenValue)) {
                 log.error("Token Error");
                 throw new CustomException(ErrorCode.INVALID_TOKEN);

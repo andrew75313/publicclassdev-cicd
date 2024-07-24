@@ -73,4 +73,8 @@ public class Users {
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
+    public void updateRole(RoleEnum role) {
+        this.role = role;
+    }
 }
