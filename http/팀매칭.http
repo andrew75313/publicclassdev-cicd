@@ -21,3 +21,8 @@ Authorization: {{Authorization}}
 POST http://localhost:8080/api/teams/create
 Content-Type: application/json
 Authorization: {{Authorization}}
+
+### 팀 조회
+POST http://localhost:8080/api/teams/1
+Content-Type: application/json
+Authorization: {{Authorization}}

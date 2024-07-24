@@ -1,14 +1,20 @@
 package com.sparta.publicclassdev.domain.teams.service;
 
-import com.sparta.publicclassdev.domain.teams.dto.TeamCreatesResponseDto;
+import com.sparta.publicclassdev.domain.teams.dto.TeamResponseDto;
 import com.sparta.publicclassdev.domain.teams.entity.TeamUsers;
 import com.sparta.publicclassdev.domain.teams.entity.Teams;
 import com.sparta.publicclassdev.domain.teams.repository.TeamUsersRepository;
 import com.sparta.publicclassdev.domain.teams.repository.TeamsRepository;
 import com.sparta.publicclassdev.domain.users.entity.Users;
+import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
+import com.sparta.publicclassdev.global.exception.CustomException;
+import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +25,23 @@ public class TeamsService {
 
     private final TeamsRepository teamsRepository;
     private final TeamUsersRepository teamUsersRepository;
+    private final UsersRepository usersRepository;
+
+    private static final List<String> ADJECTIVES = Arrays.asList(
+        "Agile", "Brave", "Calm", "Daring", "Eager", "Fierce", "Gentle", "Heroic", "Jolly", "Keen"
+    );
+
+    private static final List<String> NOUNS = Arrays.asList(
+        "Warriors", "Knights", "Mavericks", "Pioneers", "Rangers", "Samurais", "Titans", "Vikings", "Wizards", "Yankees"
+    );
+
+    private static final Random RANDOM = new Random();
+
+    public static String generateRandomTeamName() {
+        String adjective = ADJECTIVES.get(RANDOM.nextInt(ADJECTIVES.size()));
+        String noun = NOUNS.get(RANDOM.nextInt(NOUNS.size()));
+        return adjective + " " + noun;
+    }
 
     @Transactional
     public void teamMatch(Users users) {
@@ -29,7 +52,7 @@ public class TeamsService {
     }
 
     @Transactional
-    public TeamCreatesResponseDto createTeam() {
+    public TeamResponseDto createTeam() {
         List<TeamUsers> waitUser = teamUsersRepository.findAll();
         Collections.shuffle(waitUser);
 
@@ -54,10 +77,38 @@ public class TeamsService {
             teamUsersRepository.save(teamUsers);
             teamUsersRepository.delete(teamUsers);
         }
-        return new TeamCreatesResponseDto(teams, teamMembers);
+        return new TeamResponseDto(teams, teamMembers);
     }
 
     public void deleteAllTeams() {
         teamsRepository.deleteAll();
+    }
+
+    @Transactional(readOnly = true)
+    public TeamResponseDto getTeamById(Long teamsId, Long userId) {
+        Teams teams = validateTeam(teamsId);
+        Users user = validateUser(userId);
+
+        boolean isUserInTeam = teamUsersRepository.existsByTeamsAndUsers(teams, user);
+        if (!isUserInTeam) {
+            throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+        }
+
+        List<Users> teamMembers = teams.getTeamUsers().stream()
+            .map(teamUsers -> teamUsers.getUsers())
+            .collect(Collectors.toList());
+
+        return new TeamResponseDto(teams, teamMembers);
+    }
+
+
+    private Teams validateTeam(Long teamsId) {
+        return teamsRepository.findById(teamsId)
+            .orElseThrow(() -> new CustomException(ErrorCode.TEAM_NOT_FOUND));
+    }
+
+    private Users validateUser(Long userId) {
+        return usersRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }
