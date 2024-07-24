@@ -109,7 +109,7 @@ public class CodeReviewsService {
 
     category = arrangeCategory(category);
 
-    Page<Tuple> codeReviewsPage = codeReviewsRepository.findAllByCategory(category, pageable);
+    Page<Tuple> codeReviewsPage = codeReviewsRepository.findAllByCategory(category + " ", pageable);
 
     List<CodeReviewsWithUserResponseDto> responseDtoList = codeReviewsPage.getContent().stream()
         .map(CodeReviewsWithUserResponseDto::new)
