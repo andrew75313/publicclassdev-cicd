@@ -75,6 +75,11 @@ POST http://localhost:8080/api/users/logout
 Authorization: {{Authorization}}
 Content-Type: application/json
 
+> {%
+  client.global.clear("Authorization")
+  client.global.clear("RefreshToken")
+%}
+
 ###
 # curl -X POST --location "http://localhost:8080/api/users/withdraw"
 #    -H "Authorization: Bearer accesstoken"
@@ -91,6 +96,21 @@ Content-Type: application/json
   "email": "asdf1234@email.com",
   "password": "Asdf1111!"
 }
+> {%
+  client.global.clear("Authorization")
+  client.global.clear("RefreshToken")
+%}
 
 ###
+POST http://localhost:8080/api/users/reissue-token
+Authorization: {{Authorization}}
+Content-Type: application/json
 
+{
+  "refreshToken": "{{RefreshToken}}"
+}
+
+> {%
+  client.global.set("Authorization", response.headers.valueOf("Authorization"));
+  client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
+%}

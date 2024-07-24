@@ -1,10 +1,10 @@
 package com.sparta.publicclassdev.domain.users.controller;
 
-import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
-import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
-import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
+import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.ReissueTokenRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.UpdateProfileResponseDto;
@@ -17,7 +17,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,8 +40,8 @@ public class UsersController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<MessageResponse> login(@Valid @RequestBody LoginRequestDto requestDto, HttpServletResponse response) {
-        LoginResponseDto responseDto = usersService.login(requestDto);
+    public ResponseEntity<MessageResponse> login(@Valid @RequestBody AuthRequestDto requestDto, HttpServletResponse response) {
+        AuthResponseDto responseDto = usersService.login(requestDto);
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, responseDto.getAccessToken());
         response.addHeader(JwtUtil.REFRESH, responseDto.getRefreshToken());
         MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "로그인 성공");
@@ -70,11 +69,20 @@ public class UsersController {
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
     @PostMapping("/withdraw")
-    public ResponseEntity<MessageResponse> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody LoginRequestDto requestDto, HttpServletRequest request) {
-        // email과 password만 필요하기 때문에 같은 내용의 dto객체를 새로 만드는 대신 LoginRequestDto 재활용
+    public ResponseEntity<MessageResponse> withdraw(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody AuthRequestDto requestDto, HttpServletRequest request) {
         usersService.withdraw(userDetails.getUser().getId(), requestDto);
         logout(userDetails, request);
         MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "회원탈퇴 성공");
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+    }
+    @PostMapping("/reissue-token")
+    public ResponseEntity<MessageResponse> reissueToken(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestBody ReissueTokenRequestDto requestDto,
+        HttpServletResponse response) {
+        AuthResponseDto responseDto = usersService.reissueToken(userDetails.getUser(), userDetails.getUser().getRole(), requestDto.getRefreshToken());
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, responseDto.getAccessToken());
+        response.addHeader(JwtUtil.REFRESH, responseDto.getRefreshToken());
+        MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "토큰 재발급 성공");
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 }

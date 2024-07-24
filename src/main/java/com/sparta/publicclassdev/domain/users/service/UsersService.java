@@ -5,8 +5,8 @@ import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
 import com.sparta.publicclassdev.domain.community.entity.Communities;
 import com.sparta.publicclassdev.domain.community.repository.CommunitiesRepository;
 import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
-import com.sparta.publicclassdev.domain.users.dto.LoginRequestDto;
-import com.sparta.publicclassdev.domain.users.dto.LoginResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
+import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
@@ -23,6 +23,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -67,8 +68,8 @@ public class UsersService {
             .role(user.getRole())
             .build();
     }
-    @Cacheable(cacheNames = CacheNames.LOGINUSER, key = "'login'+ #p0.getEmail()", unless = "#result== null")
-    public LoginResponseDto login(LoginRequestDto requestDto) {
+    @Cacheable(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+ #p0.getEmail()", unless = "#result== null")
+    public AuthResponseDto login(AuthRequestDto requestDto) {
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
 
@@ -81,7 +82,7 @@ public class UsersService {
         if(user.getRole().equals(RoleEnum.WITHDRAW)) {
             throw new CustomException(ErrorCode.USER_WITHDRAW);
         }
-        LoginResponseDto responseDto = new LoginResponseDto(jwtUtil.createAccessToken(user),
+        AuthResponseDto responseDto = new AuthResponseDto(jwtUtil.createAccessToken(user),
             jwtUtil.createRefreshToken(user));
         redisDao.setRefreshToken(email, responseDto.getRefreshToken(), jwtUtil.getREFRESHTOKEN_TIME());
         return responseDto;
@@ -109,7 +110,7 @@ public class UsersService {
         );
     }
 
-    @CacheEvict(cacheNames = CacheNames.LOGINUSER, key = "'login'+#p1")
+    @CacheEvict(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+#p1")
     @Transactional
     public void logout(String accessToken, String email) {
         String substringToken = jwtUtil.substringToken(accessToken);
@@ -123,7 +124,7 @@ public class UsersService {
     }
 
     @Transactional
-    public void withdraw(Long id, LoginRequestDto requestDto) {
+    public void withdraw(Long id, AuthRequestDto requestDto) {
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
         Users user = findById(id);
@@ -137,5 +138,15 @@ public class UsersService {
             throw new CustomException(ErrorCode.USER_WITHDRAW);
         }
         user.updateRole(RoleEnum.WITHDRAW);
+    }
+    @CachePut(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+ #p0.getEmail()")
+    public AuthResponseDto reissueToken(Users user, RoleEnum role, String refreshToken) {
+        if(!redisDao.getRefreshToken(user.getEmail()).equals(refreshToken)) {
+            throw new CustomException(ErrorCode.TOKEN_MISMATCH);
+        }
+        String accessToken = jwtUtil.createAccessToken(user);
+        String newRefreshToken = jwtUtil.createRefreshToken(user);
+        redisDao.setRefreshToken(user.getEmail(), newRefreshToken, jwtUtil.getREFRESHTOKEN_TIME());
+        return new AuthResponseDto(accessToken, newRefreshToken);
     }
 }

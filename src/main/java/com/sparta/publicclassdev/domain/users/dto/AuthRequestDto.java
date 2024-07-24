@@ -1,19 +1,18 @@
 package com.sparta.publicclassdev.domain.users.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class LoginRequestDto {
+public class AuthRequestDto {
     @NotBlank
     private String email;
     @NotBlank
     private String password;
 
-    public LoginRequestDto(String email, String password) {
+    public AuthRequestDto(String email, String password) {
         this.email = email;
         this.password = password;
     }
