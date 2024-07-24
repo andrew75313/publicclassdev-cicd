@@ -9,6 +9,8 @@ import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
 import com.sparta.publicclassdev.domain.codereview.util.SizingConstants;
+import com.sparta.publicclassdev.domain.codereviewcomment.dto.CodeReviewCommentsWithLikesResponseDto;
+import com.sparta.publicclassdev.domain.codereviewcomment.repository.CodeReviewCommentsRepository;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
@@ -37,6 +39,7 @@ import org.springframework.stereotype.Service;
 public class CodeReviewsService {
 
   private final CodeReviewsRepository codeReviewsRepository;
+  private final CodeReviewCommentsRepository codeReviewCommentsRepository;
   private final UsersRepository usersRepository;
 
   private final MinioClient minioClient;
@@ -88,13 +91,15 @@ public class CodeReviewsService {
 
     CodeReviews foundCodeReviews = validateCodeReviewId(codeReviewsId);
 
-    Users foundUser = usersRepository.findById(foundCodeReviews.getUser().getId()).orElseThrow(
-        () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-    );
-
     String code = downloadCodeFile(foundCodeReviews);
 
-    return new CodeReviewsDetailResponseDto(foundCodeReviews, code, foundUser);
+    List<CodeReviewCommentsWithLikesResponseDto> commentList = codeReviewCommentsRepository.findByCodeReviewIdWithDetails(
+            codeReviewsId).stream()
+        .map(CodeReviewCommentsWithLikesResponseDto::new)
+        .collect(Collectors.toList());
+
+    return new CodeReviewsDetailResponseDto(foundCodeReviews, code, foundCodeReviews.getUser(),
+        commentList);
   }
 
   @Transactional
