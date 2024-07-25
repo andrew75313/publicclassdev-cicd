@@ -17,6 +17,7 @@ import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import io.minio.MinioClient;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -143,6 +144,7 @@ public class CodeReviewCommentsServiceIntegrationTest {
   }
 
   @Test
+  @Transactional
   public void testUpdateCodeReviewComment() {
     // given
     Users user = createTestUser();
@@ -171,6 +173,7 @@ public class CodeReviewCommentsServiceIntegrationTest {
   }
 
   @Test
+  @Transactional
   public void testDeleteCodeReviewComment() {
     // given
     Users user = createTestUser();

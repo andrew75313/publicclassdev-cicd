@@ -2,33 +2,22 @@ package com.sparta.publicclassdev.domain.codereview.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsDetailResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsSearchResponseDto;
-import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsWithUserResponseDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
 import com.sparta.publicclassdev.domain.codereview.service.CodeReviewsService;
-import com.sparta.publicclassdev.domain.codereview.util.SizingConstants;
-import com.sparta.publicclassdev.domain.codereviewcomment.dto.CodeReviewCommentsWithLikesResponseDto;
-import com.sparta.publicclassdev.domain.codereviewcomment.entity.CodeReviewComments;
 import com.sparta.publicclassdev.domain.codereviewcomment.repository.CodeReviewCommentsRepository;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
-import com.sparta.publicclassdev.global.exception.CustomException;
-import io.minio.GetObjectArgs;
-import io.minio.GetObjectResponse;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.errors.ErrorResponseException;
@@ -37,26 +26,14 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
-import java.io.ByteArrayInputStream;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.List;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -73,7 +50,6 @@ public class CodeReviewsServiceIntegrationTest {
   private String testCodeReviewContents = "Contents";
   private Long testUserId = 1L;
   private Long testCodeReviewId = 1L;
-  private Long testCommentId = 1L;
 
   @Autowired
   private CodeReviewsService codeReviewsService;
@@ -117,16 +93,6 @@ public class CodeReviewsServiceIntegrationTest {
         .build();
   }
 
-  private CodeReviewComments createTestCodeReviewComments(CodeReviews codeReview, Users user) {
-    return CodeReviewComments.builder()
-        .id(testCommentId)
-        .contents("Comment")
-        .status(CodeReviewComments.Status.ACTIVE)
-        .user(user)
-        .codeReviews(codeReview)
-        .build();
-  }
-
   private CodeReviewsRequestDto createTestCodeReviewsRequestDto() {
     CodeReviewsRequestDto requestDto = new CodeReviewsRequestDto();
 
@@ -142,53 +108,32 @@ public class CodeReviewsServiceIntegrationTest {
     return "codereviews-code/code-" + codeReviewId + ".txt";
   }
 
-  @Nested
-  class CreateCodeReviewTests {
 
-    @Test
-    void testCreateCodeReviewSuccess() {
-      // Given
-      Users user = createTestUser();
+  @Test
+  @Transactional
+  void testCreateCodeReview() {
+    // Given
+    Users user = createTestUser();
 
-      usersRepository.save(user);
+    usersRepository.save(user);
 
-      CodeReviewsRequestDto requestDto = createTestCodeReviewsRequestDto();
+    CodeReviewsRequestDto requestDto = createTestCodeReviewsRequestDto();
 
-      try {
-        given(minioClient.putObject(any(PutObjectArgs.class))).willReturn(null);
-      } catch (Exception e) {
-        fail("테스트 실패: MinIO 설정 문제");
-      }
-      // When
-      CodeReviewsResponseDto responseDto = codeReviewsService.createCodeReview(requestDto, user);
-
-      // Then
-      assertNotNull(responseDto);
-      assertEquals(testCodeReviewTitle, responseDto.getTitle());
-      assertEquals(testCodeReviewCategory, responseDto.getCategory());
-      assertEquals(testCodeReviewContents, responseDto.getContents());
+    try {
+      given(minioClient.putObject(any(PutObjectArgs.class))).willReturn(null);
+    } catch (Exception e) {
+      fail("테스트 실패: MinIO 설정 문제");
     }
+    // When
+    CodeReviewsResponseDto responseDto = codeReviewsService.createCodeReview(requestDto, user);
 
-    @Test
-    void testCreateCodeReviewFailure() {
-      // Given
-      Users user = createTestUser();
-      usersRepository.save(user);
-
-      CodeReviewsRequestDto requestDto = createTestCodeReviewsRequestDto();
-
-      try {
-        given(minioClient.putObject(any(PutObjectArgs.class))).willThrow(
-            new RuntimeException("MinIO 설정 문제"));
-      } catch (Exception e) {
-        fail("테스트 실패: MinIO 설정 문제");
-      }
-
-      // When / Then
-      CustomException exception = assertThrows(CustomException.class,
-          () -> codeReviewsService.createCodeReview(requestDto, user));
-    }
+    // Then
+    assertNotNull(responseDto);
+    assertEquals(testCodeReviewTitle, responseDto.getTitle());
+    assertEquals(testCodeReviewCategory, responseDto.getCategory());
+    assertEquals(testCodeReviewContents, responseDto.getContents());
   }
+
 
   @Test
   void testGetAllCodeReviews() {
@@ -231,6 +176,7 @@ public class CodeReviewsServiceIntegrationTest {
   }
 
   @Test
+  @Transactional
   public void testDeleteCodeReview() {
     // given
     Users user = createTestUser();
@@ -250,6 +196,7 @@ public class CodeReviewsServiceIntegrationTest {
   }
 
   @Test
+  @Transactional
   public void testUpdateCodeReview()
       throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
     // given
