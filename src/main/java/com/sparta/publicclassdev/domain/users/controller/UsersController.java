@@ -78,10 +78,8 @@ public class UsersController {
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
     @PostMapping("/reissue-token")
-    public ResponseEntity<MessageResponse> reissueToken(@AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestBody ReissueTokenRequestDto requestDto,
-        HttpServletResponse response) {
-        AuthResponseDto responseDto = usersService.reissueToken(userDetails.getUser(), userDetails.getUser().getRole(), requestDto.getRefreshToken());
+    public ResponseEntity<MessageResponse> reissueToken(@RequestBody ReissueTokenRequestDto requestDto, HttpServletResponse response) {
+        AuthResponseDto responseDto = usersService.reissueToken(requestDto.getRefreshToken());
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, responseDto.getAccessToken());
         response.addHeader(JwtUtil.REFRESH, responseDto.getRefreshToken());
         MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "토큰 재발급 성공");

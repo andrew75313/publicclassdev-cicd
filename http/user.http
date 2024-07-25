@@ -31,7 +31,7 @@ Content-Type: application/json
 
 {
   "email" : "asdf1234@email.com",
-  "password" : "Asdf1234!"
+  "password" : "Asdf1111!"
 }
 
 > {%
@@ -102,6 +102,11 @@ Content-Type: application/json
 %}
 
 ###
+# curl -X POST --location "http://localhost:8080/api/users/reissue-token"
+#    -H "Content-Type: application/json"
+#    -d '{
+#          "refreshToken": "{{RefreshToken}}"
+#        }'
 POST http://localhost:8080/api/users/reissue-token
 Content-Type: application/json
 
@@ -128,3 +133,5 @@ Content-Type: application/json
   "point": "10",
   "type": "ADD"
 }
+
+###
