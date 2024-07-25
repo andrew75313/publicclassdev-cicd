@@ -146,10 +146,10 @@ public class CodeReviewCommentsServiceTest {
   }
 
   @Nested
-  class ValidateCodeReviewCommentIdTest {
+  class ValidateCodeReviewIdTest {
 
     @Test
-    void testValidateCodeReviewCommentId() {
+    void testValidateCodeReviewId() {
       // given
       Users user = createTestUser();
       CodeReviews codeReview = createTestCodeReviews(user);
@@ -157,21 +157,22 @@ public class CodeReviewCommentsServiceTest {
       given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.of(codeReview));
 
       // when
-      CodeReviews validatedCodeReview = codeReviewCommentsService.validateCodeReviewId(1L);
+      CodeReviews validatedCodeReview = codeReviewCommentsService.validateCodeReviewId(
+          testCodeReviewId);
 
       // then
       assertNotNull(validatedCodeReview);
-      assertEquals(1L, validatedCodeReview.getId());
+      assertEquals(testCodeReviewId, validatedCodeReview.getId());
     }
 
     @Test
-    void testValidateCodeReviewCommentId_CodeReviewCommentNotFound() {
+    void testValidateCodeReviewId_CodeReviewNotFound() {
       // given
       given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.empty());
 
       // when & then
       CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewCommentsService.validateCodeReviewId(1L);
+        codeReviewCommentsService.validateCodeReviewId(testCodeReviewId);
       });
       assertEquals(ErrorCode.NOT_FOUND_CODEREVIEW_POST, exception.getErrorCode());
     }
@@ -179,47 +180,82 @@ public class CodeReviewCommentsServiceTest {
   }
 
   @Nested
-  class ValidateOwnershipTest {
+  class ValidateCodeReviewCommentIdTest {
 
     @Test
-    void testValidateOwnership() {
+    void testValidateCodeReviewCommentId() {
       // given
-      Users writer = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(writer);
-      CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
+      Users user = createTestUser();
+      CodeReviews codeReview = createTestCodeReviews(user);
+      CodeReviewComments codeReviewComment = createTestCodeReviewComments(codeReview, user);
 
-      // when & then
-      codeReviewCommentsService.validateOwnership(codeReviewComments, writer);
+      given(codeReviewCommentsRepository.findById(anyLong())).willReturn(
+          Optional.of(codeReviewComment));
+
+      // when
+      CodeReviewComments validatedComment = codeReviewCommentsService.validateCodeReviewCommentId(
+          testCommentId);
+
+      // then
+      assertNotNull(validatedComment);
+      assertEquals(testCommentId, validatedComment.getId());
     }
 
     @Test
-    void testValidateOwnership_Unauthorized() {
+    void testValidateCodeReviewCommentId_CodeReviewCommentNotFound() {
       // given
-      Users writer = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(writer);
-      CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
-
-      testUserId = 2L;
-      Users otherUser = createTestUser();
+      given(codeReviewCommentsRepository.findById(anyLong())).willReturn(Optional.empty());
 
       // when & then
       CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewCommentsService.validateOwnership(codeReviewComments, otherUser);
+        codeReviewCommentsService.validateCodeReviewCommentId(testCommentId);
       });
-      assertEquals(ErrorCode.NOT_UNAUTHORIZED, exception.getErrorCode());
+      assertEquals(ErrorCode.NOT_FOUND_CODEREVIEW_COMMENT, exception.getErrorCode());
     }
 
-    @Test
-    void testValidateOwnership_Admin() {
-      // given
-      testUserRole = RoleEnum.ADMIN;
-      Users writer = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(writer);
-      CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
+    @Nested
+    class ValidateOwnershipTest {
 
-      // when & then
-      codeReviewCommentsService.validateOwnership(codeReviewComments, writer);
+      @Test
+      void testValidateOwnership() {
+        // given
+        Users writer = createTestUser();
+        CodeReviews codeReview = createTestCodeReviews(writer);
+        CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
+
+        // when & then
+        codeReviewCommentsService.validateOwnership(codeReviewComments, writer);
+      }
+
+      @Test
+      void testValidateOwnership_Unauthorized() {
+        // given
+        Users writer = createTestUser();
+        CodeReviews codeReview = createTestCodeReviews(writer);
+        CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
+
+        testUserId = 2L;
+        Users otherUser = createTestUser();
+
+        // when & then
+        CustomException exception = assertThrows(CustomException.class, () -> {
+          codeReviewCommentsService.validateOwnership(codeReviewComments, otherUser);
+        });
+        assertEquals(ErrorCode.NOT_UNAUTHORIZED, exception.getErrorCode());
+      }
+
+      @Test
+      void testValidateOwnership_Admin() {
+        // given
+        testUserRole = RoleEnum.ADMIN;
+        Users writer = createTestUser();
+        CodeReviews codeReview = createTestCodeReviews(writer);
+        CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
+
+        // when & then
+        codeReviewCommentsService.validateOwnership(codeReviewComments, writer);
+      }
+
     }
-
   }
 }
