@@ -145,7 +145,7 @@ public class CodeReviewsServiceTest {
     codeReviewsRepository.save(codeReview);
 
     // When
-    CodeReviewsListResponseDto responseList = codeReviewsService.getAllCodieReviews(0);
+    CodeReviewsListResponseDto responseList = codeReviewsService.getAllCodeReviews(0);
 
     // Then
     assertNotNull(responseList);
