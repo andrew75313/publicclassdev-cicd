@@ -28,9 +28,6 @@ public class CodeReviewsRepositoryTest {
   private CodeReviewsRepository codeReviewsRepository;
 
   @Autowired
-  private CodeReviewCommentsRepository codeReviewCommentsRepository;
-
-  @Autowired
   private UsersRepository usersRepository;
 
   @BeforeEach
