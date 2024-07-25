@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.codereview;
+package com.sparta.publicclassdev.domain.codereview;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
@@ -18,6 +19,8 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
+import io.minio.GetObjectArgs;
+import io.minio.GetObjectResponse;
 import io.minio.MinioClient;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -25,7 +28,9 @@ import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -45,7 +50,7 @@ public class CodeReviewsServiceTest {
   private String testUserPassword = "Test123!";
   private RoleEnum testUserRole = RoleEnum.USER;
   private String testCodeReviewTitle = "Title";
-  private String testCodeReviewCategory = "#category";
+  private String testCodeReviewCategory = "#category ";
   private String testCodeReviewContents = "Contents";
   private Long testUserId = 1L;
   private Long testCodeReviewId = 1L;
@@ -227,7 +232,7 @@ public class CodeReviewsServiceTest {
     String arrangedCategory = codeReviewsService.arrangeCategory(category);
 
     // then
-    assertEquals("#java #codetest #security", arrangedCategory);
+    assertEquals("#java #codetest #security ", arrangedCategory);
   }
 
   @Test
@@ -242,4 +247,5 @@ public class CodeReviewsServiceTest {
     // then
     assertEquals(filename, result);
   }
+
 }
