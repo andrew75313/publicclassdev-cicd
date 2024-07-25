@@ -7,11 +7,14 @@ import com.sparta.publicclassdev.domain.community.repository.CommunitiesReposito
 import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
 import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.PointResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.UpdateProfileResponseDto;
+import com.sparta.publicclassdev.domain.users.entity.CalculateTypeEnum;
+import com.sparta.publicclassdev.domain.users.entity.RankEnum;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
@@ -59,6 +62,7 @@ public class UsersService {
             .name(requestDto.getName())
             .email(requestDto.getEmail())
             .password(password)
+            .point(0)
             .role(role)
             .build();
         usersRepository.save(user);
@@ -148,5 +152,27 @@ public class UsersService {
         String newRefreshToken = jwtUtil.createRefreshToken(user);
         redisDao.setRefreshToken(user.getEmail(), newRefreshToken, jwtUtil.getREFRESHTOKEN_TIME());
         return new AuthResponseDto(accessToken, newRefreshToken);
+    }
+    public PointResponseDto getPoint(Long id) {
+        Users user = findById(id);
+        int point = user.getPoint();
+        RankEnum rank = RankEnum.getRankByPoints(point);
+
+        return new PointResponseDto(point, rank);
+    }
+
+    @Transactional
+    public PointResponseDto updatePoint(Long id, int point, CalculateTypeEnum type) {
+        Users user = findById(id);
+        switch (type) {
+            case ADD -> {
+                user.updatePoint(user.getPoint() + point);
+            }
+            case SUBTRACT -> {
+                user.updatePoint(user.getPoint() - point);
+            }
+        }
+        int newPoint = user.getPoint();
+        return new PointResponseDto(newPoint, RankEnum.getRankByPoints(newPoint));
     }
 }
