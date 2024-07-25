@@ -2,6 +2,8 @@ package com.sparta.publicclassdev.domain.users.controller;
 
 import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.PointRequestDto;
+import com.sparta.publicclassdev.domain.users.dto.PointResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ReissueTokenRequestDto;
@@ -82,5 +84,17 @@ public class UsersController {
         response.addHeader(JwtUtil.REFRESH, responseDto.getRefreshToken());
         MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "토큰 재발급 성공");
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+    }
+    @GetMapping("/points")
+    public ResponseEntity<DataResponse<PointResponseDto>> getPoints(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        PointResponseDto responseDto = usersService.getPoint(userDetails.getUser().getId());
+        DataResponse<PointResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "포인트 조회 성공", responseDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @PatchMapping("/points")
+    public ResponseEntity<DataResponse<PointResponseDto>> updatePoints(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody PointRequestDto requestDto) {
+        PointResponseDto responseDto = usersService.updatePoint(userDetails.getUser().getId(), requestDto.getPoint(), requestDto.getType());
+        DataResponse<PointResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "포인트 수정 성공", responseDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

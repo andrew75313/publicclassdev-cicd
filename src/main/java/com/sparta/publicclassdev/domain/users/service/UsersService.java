@@ -7,11 +7,14 @@ import com.sparta.publicclassdev.domain.community.repository.CommunitiesReposito
 import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
 import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.PointResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.SignupResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.UpdateProfileResponseDto;
+import com.sparta.publicclassdev.domain.users.entity.CalculateTypeEnum;
+import com.sparta.publicclassdev.domain.users.entity.RankEnum;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
@@ -63,6 +66,7 @@ public class UsersService {
             .name(requestDto.getName())
             .email(requestDto.getEmail())
             .password(password)
+            .point(0)
             .role(role)
             .build();
         usersRepository.save(user);
@@ -72,7 +76,7 @@ public class UsersService {
             .role(user.getRole())
             .build();
     }
-    @Cacheable(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+ #p0.getEmail()", unless = "#result== null")
+    @Cacheable(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+ #p0.getEmail()")
     public AuthResponseDto login(AuthRequestDto requestDto) {
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
@@ -153,11 +157,14 @@ public class UsersService {
     public AuthResponseDto reissueTokenWithEmail(String email, String refreshToken) {
         Users user = usersRepository.findByEmail(email).orElseThrow(() ->
             new UsernameNotFoundException("Not Found " + email));
-
+        String storedRefreshToken = redisDao.getRefreshToken(email);
         log.info("Received refresh token: " + refreshToken);
-        log.info("Stored refresh token: " + redisDao.getRefreshToken(email));
+        log.info("Stored refresh token: " + storedRefreshToken);
 
-        if (!redisDao.getRefreshToken(email).equals(refreshToken)) {
+        if(redisDao.getRefreshToken(email).contains("\"")) {
+            storedRefreshToken = storedRefreshToken.replace("\"", "");
+        }
+        if (!storedRefreshToken.equals(refreshToken)) {
             throw new CustomException(ErrorCode.TOKEN_MISMATCH);
         }
 
@@ -167,5 +174,27 @@ public class UsersService {
         redisDao.setRefreshToken(email, newRefreshToken, jwtUtil.getREFRESHTOKEN_TIME());
 
         return new AuthResponseDto(newAccessToken, newRefreshToken);
+    }
+    public PointResponseDto getPoint(Long id) {
+        Users user = findById(id);
+        int point = user.getPoint();
+        RankEnum rank = RankEnum.getRankByPoints(point);
+
+        return new PointResponseDto(point, rank);
+    }
+
+    @Transactional
+    public PointResponseDto updatePoint(Long id, int point, CalculateTypeEnum type) {
+        Users user = findById(id);
+        switch (type) {
+            case ADD -> {
+                user.updatePoint(user.getPoint() + point);
+            }
+            case SUBTRACT -> {
+                user.updatePoint(user.getPoint() - point);
+            }
+        }
+        int newPoint = user.getPoint();
+        return new PointResponseDto(newPoint, RankEnum.getRankByPoints(newPoint));
     }
 }
