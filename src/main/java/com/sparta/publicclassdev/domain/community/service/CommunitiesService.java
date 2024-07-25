@@ -11,6 +11,7 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,8 +37,11 @@ public class CommunitiesService {
         return new CommunitiesResponseDto(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory());
     }
 
-    public CommunitiesResponseDto updatePost(Long communityId, CommunitiesUpdateRequestDto requestDto) {
+    public CommunitiesResponseDto updatePost(Users user, Long communityId, CommunitiesUpdateRequestDto requestDto) {
         Communities community = checkCommunity(communityId);
+        if(!Objects.equals(community.getUser().getId(), user.getId())){
+            throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+        }
 
         community.updateContent(requestDto.getContent());
         repository.save(community);
@@ -47,7 +51,7 @@ public class CommunitiesService {
     public void deletePost(Long communityId, Users user) {
         Communities community = checkCommunity(communityId);
 
-        if(community.getUser() != user){
+        if(!Objects.equals(community.getUser().getId(), user.getId())){
             throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
         }
 
