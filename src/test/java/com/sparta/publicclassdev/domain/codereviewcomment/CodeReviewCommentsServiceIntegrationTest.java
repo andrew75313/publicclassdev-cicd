@@ -1,4 +1,4 @@
-package com.sparta.publicclassdev.domain.codereviewcomment.integration;
+package com.sparta.publicclassdev.domain.codereviewcomment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
