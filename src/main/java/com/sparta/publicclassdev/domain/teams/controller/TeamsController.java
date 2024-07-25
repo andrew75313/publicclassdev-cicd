@@ -39,8 +39,8 @@ public class TeamsController {
 
     @GetMapping("/{teamsId}")
     public ResponseEntity<DataResponse<TeamResponseDto>> getTeamById(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long teamsId) {
-        Long userId = userDetails.getUser().getId();
-        TeamResponseDto responseDto = teamsService.getTeamById(teamsId, userId);
+        Long usersId = userDetails.getUser().getId();
+        TeamResponseDto responseDto = teamsService.getTeamById(teamsId, usersId);
         return ResponseEntity.status(HttpStatus.OK)
             .body(new DataResponse<>(200, "팀 조회 성공", responseDto));
     }

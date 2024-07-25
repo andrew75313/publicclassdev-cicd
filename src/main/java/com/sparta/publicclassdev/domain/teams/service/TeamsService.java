@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class TeamsService {
     );
 
     private final Random RANDOM = new Random();
+    private final ConcurrentLinkedDeque<Users> waitQueue = new ConcurrentLinkedDeque<>();
 
     private String randomTeamName() {
         String teamName;
@@ -55,18 +57,16 @@ public class TeamsService {
 
     @Transactional
     public void teamMatch(Users users) {
-        TeamUsers teamUsers = TeamUsers.builder()
-            .users(users)
-            .build();
-        teamUsersRepository.save(teamUsers);
+        waitQueue.add(users);
     }
 
     @Transactional
     public TeamResponseDto createTeam() {
-        List<TeamUsers> waitUser = teamUsersRepository.findAll();
+        List<Users> waitUser = new ArrayList<>();
+        for (int i = 0; i < 3 && !waitQueue.isEmpty(); i++) {
+            waitUser.add(waitQueue.poll());
+        }
         Collections.shuffle(waitUser);
-
-        Integer teamSize = 3;
 
         Teams teams = Teams.builder()
             .name(randomTeamName())
@@ -79,8 +79,7 @@ public class TeamsService {
         chatRoomsRepository.save(chatRooms);
 
         List<Users> teamMembers = new ArrayList<>();
-        for (int i = 0; i < teamSize && !waitUser.isEmpty(); i++) {
-            Users users = waitUser.remove(0).getUsers();
+        for (Users users : waitUser) {
             teamMembers.add(users);
 
             TeamUsers teamUsers = TeamUsers.builder()
@@ -88,7 +87,6 @@ public class TeamsService {
                 .users(users)
                 .build();
             teamUsersRepository.save(teamUsers);
-            teamUsersRepository.delete(teamUsers);
 
             ChatRoomUsers chatRoomUsers = ChatRoomUsers.builder()
                 .chatRooms(chatRooms)
@@ -101,20 +99,21 @@ public class TeamsService {
 
     public void deleteAllTeams() {
         teamsRepository.deleteAll();
+        teamUsersRepository.deleteAll();
     }
 
     @Transactional(readOnly = true)
-    public TeamResponseDto getTeamById(Long teamsId, Long userId) {
+    public TeamResponseDto getTeamById(Long teamsId, Long usersId) {
         Teams teams = validateTeam(teamsId);
-        Users user = validateUser(userId);
+        Users users = validateUser(usersId);
 
-        boolean isUserInTeam = teamUsersRepository.existsByTeamsAndUsers(teams, user);
+        boolean isUserInTeam = teamUsersRepository.existsByTeamsAndUsers(teams, users);
         if (!isUserInTeam) {
             throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
         }
 
         List<Users> teamMembers = teams.getTeamUsers().stream()
-            .map(teamUsers -> teamUsers.getUsers())
+            .map(TeamUsers::getUsers)
             .collect(Collectors.toList());
 
         return new TeamResponseDto(teams, teamMembers);
