@@ -110,9 +110,7 @@ class CodeReviewsControllerTest {
     ReflectionTestUtils.setField(codeReviewsRequestDto, "contents", "Test Contents");
 
     codeReviewsResponseDto = new CodeReviewsResponseDto(codeReview, user);
-
   }
-
 
   @Test
   void testCreateCodeReview() throws Exception {
