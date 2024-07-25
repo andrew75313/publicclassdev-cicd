@@ -2,47 +2,43 @@ package com.sparta.publicclassdev.domain.codereview;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsSearchResponseDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
+import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
 import com.sparta.publicclassdev.domain.codereview.service.CodeReviewsService;
 import com.sparta.publicclassdev.domain.codereviewcomment.repository.CodeReviewCommentsRepository;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
-import com.sparta.publicclassdev.global.exception.CustomException;
-import com.sparta.publicclassdev.global.exception.ErrorCode;
-import io.minio.GetObjectArgs;
-import io.minio.GetObjectResponse;
 import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
 import io.minio.errors.InternalException;
 import io.minio.errors.InvalidResponseException;
 import io.minio.errors.ServerException;
 import io.minio.errors.XmlParserException;
-import java.io.ByteArrayInputStream;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ActiveProfiles("test")
 public class CodeReviewsServiceTest {
 
   private String testUserName = "testuser";
@@ -55,21 +51,20 @@ public class CodeReviewsServiceTest {
   private Long testUserId = 1L;
   private Long testCodeReviewId = 1L;
 
+  @Autowired
+  private CodeReviewsService codeReviewsService;
 
-  @Mock
+  @Autowired
   private CodeReviewsRepository codeReviewsRepository;
 
-  @Mock
+  @Autowired
   private CodeReviewCommentsRepository codeReviewCommentsRepository;
 
-  @Mock
+  @Autowired
   private UsersRepository usersRepository;
 
-  @Mock
+  @MockBean
   private MinioClient minioClient;
-
-  @InjectMocks
-  private CodeReviewsService codeReviewsService;
 
   private Users createTestUser() {
     Users user = Users.builder()
@@ -93,7 +88,7 @@ public class CodeReviewsServiceTest {
         .category(testCodeReviewCategory)
         .contents(testCodeReviewContents)
         .code(code)
-        .status(CodeReviews.Status.ACTIVE)
+        .status(Status.ACTIVE)
         .user(user)
         .build();
   }
@@ -113,139 +108,130 @@ public class CodeReviewsServiceTest {
     return "codereviews-code/code-" + codeReviewId + ".txt";
   }
 
-  @Nested
-  class ValidateUserTest {
 
-    @Test
-    void testValidateUser() {
-      // given
-      Users user = createTestUser();
+  @Test
+  @Transactional
+  void testCreateCodeReview() {
+    // Given
+    Users user = createTestUser();
 
-      given(usersRepository.findByEmail(any(String.class))).willReturn(Optional.of(user));
+    usersRepository.save(user);
 
-      // when
-      Users validatedUser = codeReviewsService.validateUser(user);
+    CodeReviewsRequestDto requestDto = createTestCodeReviewsRequestDto();
 
-      // then
-      assertNotNull(validatedUser);
-      assertEquals(testUserEmail, validatedUser.getEmail());
+    try {
+      given(minioClient.putObject(any(PutObjectArgs.class))).willReturn(null);
+    } catch (Exception e) {
+      fail("테스트 실패: MinIO 설정 문제");
     }
+    // When
+    CodeReviewsResponseDto responseDto = codeReviewsService.createCodeReview(requestDto, user);
 
-    @Test
-    void testValidateUser_UserNotFound() {
-      // given
-      testUserEmail = "wrong@example.com";
-      Users user = createTestUser();
-
-      given(usersRepository.findByEmail(any(String.class))).willReturn(Optional.empty());
-
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewsService.validateUser(user);
-      });
-      assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
-    }
-
+    // Then
+    assertNotNull(responseDto);
+    assertEquals(testCodeReviewTitle, responseDto.getTitle());
+    assertEquals(testCodeReviewCategory, responseDto.getCategory());
+    assertEquals(testCodeReviewContents, responseDto.getContents());
   }
 
-  @Nested
-  class ValidateCodeReviewIdTest {
 
-    @Test
-    void testValidateCodeReviewId() {
-      // given
-      Users user = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(user);
+  @Test
+  void testGetAllCodeReviews() {
+    // Given
+    Users user = createTestUser();
+    usersRepository.save(user);
 
-      given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.of(codeReview));
+    CodeReviews codeReview = createTestCodeReviews(user);
+    codeReviewsRepository.save(codeReview);
 
-      // when
-      CodeReviews validatedCodeReview = codeReviewsService.validateCodeReviewId(1L);
+    // When
+    CodeReviewsListResponseDto responseList = codeReviewsService.getAllCodieReviews(0);
 
-      // then
-      assertNotNull(validatedCodeReview);
-      assertEquals(1L, validatedCodeReview.getId());
-    }
-
-    @Test
-    void testValidateCodeReviewId_CodeReviewNotFound() {
-      // given
-      given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.empty());
-
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewsService.validateCodeReviewId(1L);
-      });
-      assertEquals(ErrorCode.NOT_FOUND_CODEREVIEW_POST, exception.getErrorCode());
-    }
-
-  }
-
-  @Nested
-  class ValidateOwnershipTest {
-
-    @Test
-    void testValidateOwnership() {
-      // given
-      Users writer = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(writer);
-
-      // when & then
-      codeReviewsService.validateOwnership(codeReview, writer);
-    }
-
-    @Test
-    void testValidateOwnership_Unauthorized() {
-      // given
-      Users writer = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(writer);
-
-      testUserId = 2L;
-      Users otherUser = createTestUser();
-
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewsService.validateOwnership(codeReview, otherUser);
-      });
-      assertEquals(ErrorCode.NOT_UNAUTHORIZED, exception.getErrorCode());
-    }
-
-    @Test
-    void testValidateOwnership_Admin() {
-      // given
-      testUserRole = RoleEnum.ADMIN;
-      Users writer = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(writer);
-
-      // when & then
-      codeReviewsService.validateOwnership(codeReview, writer);
-    }
-
+    // Then
+    assertNotNull(responseList);
+    assertEquals(testCodeReviewId, responseList.getItems().get(0).getId());
+    assertEquals(1, responseList.getTotalItems());
   }
 
   @Test
-  void testArrangeCategory() {
+  public void testGetCodeReviewsByCategory() {
     // given
-    String category = "#JAVA #code test # security ";
+    Users user = createTestUser();
+    usersRepository.save(user);
+
+    CodeReviews codeReview = createTestCodeReviews(user);
+    codeReviewsRepository.save(codeReview);
+
+    int page = 0;
+    String searchCategory = "category";
 
     // when
-    String arrangedCategory = codeReviewsService.arrangeCategory(category);
+    CodeReviewsSearchResponseDto responseDtoResult = codeReviewsService.getCodeReviewsByCategory(
+        searchCategory, page);
 
     // then
-    assertEquals("#java #codetest #security ", arrangedCategory);
+    assertEquals(searchCategory, responseDtoResult.getSearchCategory());
+    assertEquals(1, responseDtoResult.getTotalItems());
+    assertEquals(codeReview.getId(), responseDtoResult.getItems().get(0).getId());
   }
 
   @Test
-  void testUploadCodeFile() {
+  @Transactional
+  public void testDeleteCodeReview() {
     // given
-    String code = createTestCode(testCodeReviewId);
-    String filename = "codereviews-code/code-1.txt";
+    Users user = createTestUser();
+    usersRepository.save(user);
+
+    CodeReviews codeReview = createTestCodeReviews(user);
+    codeReviewsRepository.save(codeReview);
 
     // when
-    String result = codeReviewsService.uploadCodeFile(testCodeReviewId, code);
+    codeReviewsService.deleteCodeReview(codeReview.getId(), user);
 
     // then
-    assertEquals(filename, result);
+    CodeReviews deletedCodeReview = codeReviewsRepository.findById(codeReview.getId()).orElse(null);
+
+    assertNotNull(deletedCodeReview);
+    assertEquals(Status.DELETED, deletedCodeReview.getStatus());
   }
 
+  @Test
+  @Transactional
+  public void testUpdateCodeReview()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    // given
+    Users user = createTestUser();
+    usersRepository.save(user);
+
+    CodeReviews codeReview = createTestCodeReviews(user);
+    codeReviewsRepository.save(codeReview);
+
+    CodeReviewsRequestDto updateRequestDto = createTestCodeReviewsRequestDto();
+    ReflectionTestUtils.setField(updateRequestDto, "title", "UPDATE Title");
+    ReflectionTestUtils.setField(updateRequestDto, "contents", "UPDATE Contents");
+    ReflectionTestUtils.setField(updateRequestDto, "category", "#updatecategory");
+    ReflectionTestUtils.setField(updateRequestDto, "code", "UPDATE Code");
+
+    String updatedCodeFileName = createTestCode(codeReview.getId());
+
+    given(minioClient.putObject(any(PutObjectArgs.class))).willAnswer(invocation -> {
+      PutObjectArgs args = invocation.getArgument(0);
+      assertEquals(updatedCodeFileName, args.object());
+      return null;
+    });
+
+    // when
+    CodeReviewsResponseDto responseDto = codeReviewsService.updateCodeReview(
+        updateRequestDto, codeReview.getId(), user);
+
+    // then
+    CodeReviews updatedCodeReview = codeReviewsRepository.findById(codeReview.getId())
+        .orElse(null);
+
+    assertNotNull(updatedCodeReview);
+    assertEquals("UPDATE Title", updatedCodeReview.getTitle());
+    assertEquals("UPDATE Contents", updatedCodeReview.getContents());
+    assertEquals("#updatecategory ", updatedCodeReview.getCategory());
+    assertEquals(updatedCodeFileName, updatedCodeReview.getCode());
+  }
 }

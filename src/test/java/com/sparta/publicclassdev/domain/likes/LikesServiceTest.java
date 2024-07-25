@@ -2,32 +2,32 @@ package com.sparta.publicclassdev.domain.likes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
 
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
+import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
+import com.sparta.publicclassdev.domain.codereview.service.CodeReviewsService;
+import com.sparta.publicclassdev.domain.codereviewcomment.dto.CodeReviewCommentsRequestDto;
 import com.sparta.publicclassdev.domain.codereviewcomment.entity.CodeReviewComments;
 import com.sparta.publicclassdev.domain.codereviewcomment.repository.CodeReviewCommentsRepository;
+import com.sparta.publicclassdev.domain.likes.entity.Likes;
+import com.sparta.publicclassdev.domain.likes.repository.LikesRepository;
 import com.sparta.publicclassdev.domain.likes.service.LikesService;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
-import com.sparta.publicclassdev.global.exception.CustomException;
-import com.sparta.publicclassdev.global.exception.ErrorCode;
-import java.util.Optional;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ActiveProfiles("test")
 public class LikesServiceTest {
+
 
   private String testUserName = "testuser";
   private String testUserEmail = "test@email.com";
@@ -36,21 +36,28 @@ public class LikesServiceTest {
   private String testCodeReviewTitle = "Title";
   private String testCodeReviewCategory = "#category ";
   private String testCodeReviewContents = "Contents";
+  private String testCommentContents = "Comment";
   private Long testUserId = 1L;
   private Long testCodeReviewId = 1L;
   private Long testCommentId = 1L;
+  private Long testLikeId = 1L;
 
+  @Autowired
+  private CodeReviewsService codeReviewsService;
 
-  @Mock
+  @Autowired
   private CodeReviewsRepository codeReviewsRepository;
 
-  @Mock
+  @Autowired
   private CodeReviewCommentsRepository codeReviewCommentsRepository;
 
-  @Mock
+  @Autowired
   private UsersRepository usersRepository;
 
-  @InjectMocks
+  @Autowired
+  private LikesRepository likesRepository;
+
+  @Autowired
   private LikesService likesService;
 
   private Users createTestUser() {
@@ -75,7 +82,7 @@ public class LikesServiceTest {
         .category(testCodeReviewCategory)
         .contents(testCodeReviewContents)
         .code(code)
-        .status(CodeReviews.Status.ACTIVE)
+        .status(Status.ACTIVE)
         .user(user)
         .build();
   }
@@ -83,11 +90,29 @@ public class LikesServiceTest {
   private CodeReviewComments createTestCodeReviewComments(CodeReviews codeReview, Users user) {
     return CodeReviewComments.builder()
         .id(testCommentId)
-        .contents("Comment")
+        .contents(testCommentContents)
         .status(CodeReviewComments.Status.ACTIVE)
         .user(user)
         .codeReviews(codeReview)
         .build();
+  }
+
+  private CodeReviewsRequestDto createTestCodeReviewsRequestDto() {
+    CodeReviewsRequestDto requestDto = new CodeReviewsRequestDto();
+
+    ReflectionTestUtils.setField(requestDto, "title", testCodeReviewTitle);
+    ReflectionTestUtils.setField(requestDto, "contents", testCodeReviewContents);
+    ReflectionTestUtils.setField(requestDto, "category", testCodeReviewCategory);
+    ReflectionTestUtils.setField(requestDto, "code", "Code");
+
+    return requestDto;
+  }
+
+  private CodeReviewCommentsRequestDto createTestCodeReviewCommentsRequestDto() {
+    CodeReviewCommentsRequestDto requestDto = new CodeReviewCommentsRequestDto();
+
+    ReflectionTestUtils.setField(requestDto, "contents", testCommentContents);
+    return requestDto;
   }
 
   private String createTestCode(Long codeReviewId) {
@@ -95,104 +120,98 @@ public class LikesServiceTest {
   }
 
   @Nested
-  class ValidateUserTest {
+  class SetLikeTest {
 
     @Test
-    void testValidateUser() {
+    void testSetLike_NoLikeExists() {
       // given
       Users user = createTestUser();
+      usersRepository.save(user);
 
-      given(usersRepository.findByEmail(any(String.class))).willReturn(Optional.of(user));
-
-      // when
-      Users validatedUser = likesService.validateUser(user);
-
-      // then
-      assertNotNull(validatedUser);
-      assertEquals(testUserEmail, validatedUser.getEmail());
-    }
-
-    @Test
-    void testValidateUser_UserNotFound() {
-      // given
-      testUserEmail = "wrong@example.com";
-      Users user = createTestUser();
-
-      given(usersRepository.findByEmail(any(String.class))).willReturn(Optional.empty());
-
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        likesService.validateUser(user);
-      });
-      assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
-    }
-
-  }
-
-  @Nested
-  class ValidateCodeReviewIdTest {
-
-    @Test
-    void testValidateCodeReviewId() {
-      // given
-      Users user = createTestUser();
       CodeReviews codeReview = createTestCodeReviews(user);
+      codeReviewsRepository.save(codeReview);
 
-      given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.of(codeReview));
+      CodeReviewComments comment = createTestCodeReviewComments(codeReview, user);
+      codeReviewCommentsRepository.save(comment);
 
       // when
-      CodeReviews validatedCodeReview = likesService.validateCodeReviewId(testCodeReviewId);
+      String resultMessage = likesService.setLike(codeReview.getId(), comment.getId(), user);
 
       // then
-      assertNotNull(validatedCodeReview);
-      assertEquals(testCodeReviewId, validatedCodeReview.getId());
+      assertEquals("코드 리뷰 댓글 좋아요 추가 완료", resultMessage);
+
+      Likes like = likesRepository.findByUserIdAndCodeReviewCommentId(user.getId(),
+          comment.getId());
+      assertNotNull(like);
+      assertEquals(Likes.Status.LIKED, like.getStatus());
     }
 
     @Test
-    void testValidateCodeReviewId_CodeReviewNotFound() {
-      // given
-      given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.empty());
-
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        likesService.validateCodeReviewId(testCodeReviewId);
-      });
-      assertEquals(ErrorCode.NOT_FOUND_CODEREVIEW_POST, exception.getErrorCode());
-    }
-
-  }
-
-  @Nested
-  class ValidateCodeReviewCommentIdTest {
-
-    @Test
-    void testValidateCodeReviewCommentId() {
+    void testSetLikeWhen_LikeExists() {
       // given
       Users user = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(user);
-      CodeReviewComments codeReviewComment = createTestCodeReviewComments(codeReview, user);
+      usersRepository.save(user);
 
-      given(codeReviewCommentsRepository.findById(anyLong())).willReturn(
-          Optional.of(codeReviewComment));
+      CodeReviews codeReview = createTestCodeReviews(user);
+      codeReviewsRepository.save(codeReview);
+
+      CodeReviewComments comment = createTestCodeReviewComments(codeReview, user);
+      codeReviewCommentsRepository.save(comment);
+
+      Likes like = Likes.builder()
+          .id(testLikeId)
+          .status(Likes.Status.LIKED)
+          .user(user)
+          .codeReviewComment(comment)
+          .build();
+
+      likesRepository.save(like);
 
       // when
-      CodeReviewComments validatedComment = likesService.validateCodeReviewCommentId(testCommentId);
+      String result = likesService.setLike(codeReview.getId(), comment.getId(), user);
 
       // then
-      assertNotNull(validatedComment);
-      assertEquals(testCommentId, validatedComment.getId());
+      assertEquals("코드 리뷰 댓글 좋아요 삭제 완료", result);
+
+      Likes updatedLike = likesRepository.findByUserIdAndCodeReviewCommentId(user.getId(),
+          comment.getId());
+      assertNotNull(updatedLike);
+      assertEquals(testLikeId, updatedLike.getId());
+      assertEquals(Likes.Status.UNLIKED, updatedLike.getStatus());
     }
 
     @Test
-    void testValidateCodeReviewCommentId_CodeReviewCommentNotFound() {
+    void testSetLike_LikeDeleted() {
       // given
-      given(codeReviewCommentsRepository.findById(anyLong())).willReturn(Optional.empty());
+      Users user = createTestUser();
+      usersRepository.save(user);
 
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        likesService.validateCodeReviewCommentId(testCommentId);
-      });
-      assertEquals(ErrorCode.NOT_FOUND_CODEREVIEW_COMMENT, exception.getErrorCode());
+      CodeReviews codeReview = createTestCodeReviews(user);
+      codeReviewsRepository.save(codeReview);
+
+      CodeReviewComments comment = createTestCodeReviewComments(codeReview, user);
+      codeReviewCommentsRepository.save(comment);
+
+      Likes like = Likes.builder()
+          .id(testLikeId)
+          .status(Likes.Status.UNLIKED)
+          .user(user)
+          .codeReviewComment(comment)
+          .build();
+
+      likesRepository.save(like);
+
+      // when
+      String result = likesService.setLike(codeReview.getId(), comment.getId(), user);
+
+      // then
+      assertEquals("코드 리뷰 댓글 좋아요 추가 완료", result);
+
+      Likes updatedLike = likesRepository.findByUserIdAndCodeReviewCommentId(user.getId(),
+          comment.getId());
+      assertNotNull(updatedLike);
+      assertEquals(testLikeId, updatedLike.getId());
+      assertEquals(Likes.Status.LIKED, updatedLike.getStatus());
     }
   }
 }

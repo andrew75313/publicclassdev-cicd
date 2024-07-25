@@ -2,33 +2,31 @@ package com.sparta.publicclassdev.domain.codereviewcomment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
 
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
+import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
 import com.sparta.publicclassdev.domain.codereview.repository.CodeReviewsRepository;
+import com.sparta.publicclassdev.domain.codereview.service.CodeReviewsService;
+import com.sparta.publicclassdev.domain.codereviewcomment.dto.CodeReviewCommentsRequestDto;
+import com.sparta.publicclassdev.domain.codereviewcomment.dto.CodeReviewCommentsResponseDto;
 import com.sparta.publicclassdev.domain.codereviewcomment.entity.CodeReviewComments;
 import com.sparta.publicclassdev.domain.codereviewcomment.repository.CodeReviewCommentsRepository;
 import com.sparta.publicclassdev.domain.codereviewcomment.service.CodeReviewCommentsService;
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
-import com.sparta.publicclassdev.global.exception.CustomException;
-import com.sparta.publicclassdev.global.exception.ErrorCode;
 import io.minio.MinioClient;
-import java.util.Optional;
-import org.junit.jupiter.api.Nested;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ActiveProfiles("test")
 public class CodeReviewCommentsServiceTest {
 
   private String testUserName = "testuser";
@@ -38,24 +36,26 @@ public class CodeReviewCommentsServiceTest {
   private String testCodeReviewTitle = "Title";
   private String testCodeReviewCategory = "#category ";
   private String testCodeReviewContents = "Contents";
+  private String testCommentContents = "Comment";
   private Long testUserId = 1L;
   private Long testCodeReviewId = 1L;
   private Long testCommentId = 1L;
 
+  @Autowired
+  private CodeReviewsService codeReviewsService;
 
-  @Mock
+  @Autowired
   private CodeReviewsRepository codeReviewsRepository;
 
-  @Mock
+  @Autowired
   private CodeReviewCommentsRepository codeReviewCommentsRepository;
 
-  @Mock
+  @Autowired
   private UsersRepository usersRepository;
 
-  @Mock
+  @MockBean
   private MinioClient minioClient;
-
-  @InjectMocks
+  @Autowired
   private CodeReviewCommentsService codeReviewCommentsService;
 
   private Users createTestUser() {
@@ -80,7 +80,7 @@ public class CodeReviewCommentsServiceTest {
         .category(testCodeReviewCategory)
         .contents(testCodeReviewContents)
         .code(code)
-        .status(CodeReviews.Status.ACTIVE)
+        .status(Status.ACTIVE)
         .user(user)
         .build();
   }
@@ -88,7 +88,7 @@ public class CodeReviewCommentsServiceTest {
   private CodeReviewComments createTestCodeReviewComments(CodeReviews codeReview, Users user) {
     return CodeReviewComments.builder()
         .id(testCommentId)
-        .contents("Comment")
+        .contents(testCommentContents)
         .status(CodeReviewComments.Status.ACTIVE)
         .user(user)
         .codeReviews(codeReview)
@@ -106,156 +106,94 @@ public class CodeReviewCommentsServiceTest {
     return requestDto;
   }
 
+  private CodeReviewCommentsRequestDto createTestCodeReviewCommentsRequestDto() {
+    CodeReviewCommentsRequestDto requestDto = new CodeReviewCommentsRequestDto();
+
+    ReflectionTestUtils.setField(requestDto, "contents", testCommentContents);
+    return requestDto;
+  }
+
   private String createTestCode(Long codeReviewId) {
     return "codereviews-code/code-" + codeReviewId + ".txt";
   }
 
-  @Nested
-  class ValidateUserTest {
+  @Test
+  public void testCreateCodeReviewComment() {
+    // given
+    Users user = createTestUser();
+    usersRepository.save(user);
 
-    @Test
-    void testValidateUser() {
-      // given
-      Users user = createTestUser();
+    CodeReviews codeReview = createTestCodeReviews(user);
+    codeReviewsRepository.save(codeReview);
 
-      given(usersRepository.findByEmail(any(String.class))).willReturn(Optional.of(user));
+    CodeReviewCommentsRequestDto requestDto = createTestCodeReviewCommentsRequestDto();
 
-      // when
-      Users validatedUser = codeReviewCommentsService.validateUser(user);
+    // when
+    CodeReviewCommentsResponseDto responseDto = codeReviewCommentsService.createCodeReviewComment(
+        codeReview.getId(), requestDto, user);
 
-      // then
-      assertNotNull(validatedUser);
-      assertEquals(testUserEmail, validatedUser.getEmail());
-    }
+    // then
+    CodeReviewComments createdComment = codeReviewCommentsRepository.findById(responseDto.getId())
+        .orElse(null);
 
-    @Test
-    void testValidateUser_UserNotFound() {
-      // given
-      testUserEmail = "wrong@example.com";
-      Users user = createTestUser();
-
-      given(usersRepository.findByEmail(any(String.class))).willReturn(Optional.empty());
-
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewCommentsService.validateUser(user);
-      });
-      assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
-    }
-
+    assertNotNull(createdComment);
+    assertEquals(testCodeReviewId, createdComment.getId());
+    assertEquals(testCommentContents, createdComment.getContents());
+    assertEquals(testUserId, createdComment.getUser().getId());
+    assertEquals(CodeReviewComments.Status.ACTIVE, createdComment.getStatus());
   }
 
-  @Nested
-  class ValidateCodeReviewIdTest {
+  @Test
+  @Transactional
+  public void testUpdateCodeReviewComment() {
+    // given
+    Users user = createTestUser();
+    usersRepository.save(user);
 
-    @Test
-    void testValidateCodeReviewId() {
-      // given
-      Users user = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(user);
+    CodeReviews codeReview = createTestCodeReviews(user);
+    codeReviewsRepository.save(codeReview);
 
-      given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.of(codeReview));
+    CodeReviewComments comment = createTestCodeReviewComments(codeReview, user);
+    codeReviewCommentsRepository.save(comment);
 
-      // when
-      CodeReviews validatedCodeReview = codeReviewCommentsService.validateCodeReviewId(
-          testCodeReviewId);
+    testCommentContents = "UPDATE Comment";
+    CodeReviewCommentsRequestDto updateRequestDto = createTestCodeReviewCommentsRequestDto();
 
-      // then
-      assertNotNull(validatedCodeReview);
-      assertEquals(testCodeReviewId, validatedCodeReview.getId());
-    }
+    // when
+    CodeReviewCommentsResponseDto responseDto = codeReviewCommentsService.updateCodeReviewComment(
+        codeReview.getId(), comment.getId(), updateRequestDto, user);
 
-    @Test
-    void testValidateCodeReviewId_CodeReviewNotFound() {
-      // given
-      given(codeReviewsRepository.findById(anyLong())).willReturn(Optional.empty());
+    // then
+    CodeReviewComments updatedComment = codeReviewCommentsRepository.findById(comment.getId())
+        .orElse(null);
 
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewCommentsService.validateCodeReviewId(testCodeReviewId);
-      });
-      assertEquals(ErrorCode.NOT_FOUND_CODEREVIEW_POST, exception.getErrorCode());
-    }
-
+    assertNotNull(updatedComment);
+    assertEquals(testCodeReviewId, updatedComment.getId());
+    assertEquals("UPDATE Comment", updatedComment.getContents());
   }
 
-  @Nested
-  class ValidateCodeReviewCommentIdTest {
+  @Test
+  @Transactional
+  public void testDeleteCodeReviewComment() {
+    // given
+    Users user = createTestUser();
+    usersRepository.save(user);
 
-    @Test
-    void testValidateCodeReviewCommentId() {
-      // given
-      Users user = createTestUser();
-      CodeReviews codeReview = createTestCodeReviews(user);
-      CodeReviewComments codeReviewComment = createTestCodeReviewComments(codeReview, user);
+    CodeReviews codeReview = createTestCodeReviews(user);
+    codeReviewsRepository.save(codeReview);
 
-      given(codeReviewCommentsRepository.findById(anyLong())).willReturn(
-          Optional.of(codeReviewComment));
+    CodeReviewComments comment = createTestCodeReviewComments(codeReview, user);
+    codeReviewCommentsRepository.save(comment);
 
-      // when
-      CodeReviewComments validatedComment = codeReviewCommentsService.validateCodeReviewCommentId(
-          testCommentId);
+    // when
+    codeReviewCommentsService.deleteCodeReviewComment(codeReview.getId(), comment.getId(), user);
 
-      // then
-      assertNotNull(validatedComment);
-      assertEquals(testCommentId, validatedComment.getId());
-    }
+    // then
+    CodeReviewComments deletedComment = codeReviewCommentsRepository.findById(comment.getId())
+        .orElse(null);
 
-    @Test
-    void testValidateCodeReviewCommentId_CodeReviewCommentNotFound() {
-      // given
-      given(codeReviewCommentsRepository.findById(anyLong())).willReturn(Optional.empty());
-
-      // when & then
-      CustomException exception = assertThrows(CustomException.class, () -> {
-        codeReviewCommentsService.validateCodeReviewCommentId(testCommentId);
-      });
-      assertEquals(ErrorCode.NOT_FOUND_CODEREVIEW_COMMENT, exception.getErrorCode());
-    }
-
-    @Nested
-    class ValidateOwnershipTest {
-
-      @Test
-      void testValidateOwnership() {
-        // given
-        Users writer = createTestUser();
-        CodeReviews codeReview = createTestCodeReviews(writer);
-        CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
-
-        // when & then
-        codeReviewCommentsService.validateOwnership(codeReviewComments, writer);
-      }
-
-      @Test
-      void testValidateOwnership_Unauthorized() {
-        // given
-        Users writer = createTestUser();
-        CodeReviews codeReview = createTestCodeReviews(writer);
-        CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
-
-        testUserId = 2L;
-        Users otherUser = createTestUser();
-
-        // when & then
-        CustomException exception = assertThrows(CustomException.class, () -> {
-          codeReviewCommentsService.validateOwnership(codeReviewComments, otherUser);
-        });
-        assertEquals(ErrorCode.NOT_UNAUTHORIZED, exception.getErrorCode());
-      }
-
-      @Test
-      void testValidateOwnership_Admin() {
-        // given
-        testUserRole = RoleEnum.ADMIN;
-        Users writer = createTestUser();
-        CodeReviews codeReview = createTestCodeReviews(writer);
-        CodeReviewComments codeReviewComments = createTestCodeReviewComments(codeReview, writer);
-
-        // when & then
-        codeReviewCommentsService.validateOwnership(codeReviewComments, writer);
-      }
-
-    }
+    assertNotNull(deletedComment);
+    assertEquals(testCodeReviewId, deletedComment.getId());
+    assertEquals(CodeReviewComments.Status.DELETED, deletedComment.getStatus());
   }
 }
