@@ -76,7 +76,7 @@ public class UsersService {
             .role(user.getRole())
             .build();
     }
-    @Cacheable(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+ #p0.getEmail()", unless = "#result== null")
+    @Cacheable(cacheNames = CacheNames.USERBYEMAIL, key = "'login'+ #p0.getEmail()")
     public AuthResponseDto login(AuthRequestDto requestDto) {
         String email = requestDto.getEmail();
         String password = requestDto.getPassword();
@@ -157,11 +157,14 @@ public class UsersService {
     public AuthResponseDto reissueTokenWithEmail(String email, String refreshToken) {
         Users user = usersRepository.findByEmail(email).orElseThrow(() ->
             new UsernameNotFoundException("Not Found " + email));
-
+        String storedRefreshToken = redisDao.getRefreshToken(email);
         log.info("Received refresh token: " + refreshToken);
-        log.info("Stored refresh token: " + redisDao.getRefreshToken(email));
+        log.info("Stored refresh token: " + storedRefreshToken);
 
-        if (!redisDao.getRefreshToken(email).equals(refreshToken)) {
+        if(redisDao.getRefreshToken(email).contains("\"")) {
+            storedRefreshToken = storedRefreshToken.replace("\"", "");
+        }
+        if (!storedRefreshToken.equals(refreshToken)) {
             throw new CustomException(ErrorCode.TOKEN_MISMATCH);
         }
 
