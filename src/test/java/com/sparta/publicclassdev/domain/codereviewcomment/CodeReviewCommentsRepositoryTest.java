@@ -14,12 +14,14 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import jakarta.persistence.Tuple;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -74,12 +76,16 @@ public class CodeReviewCommentsRepositoryTest {
         .codeReviews(codeReview)
         .build();
 
+    ReflectionTestUtils.setField(comment1, "createdAt", LocalDateTime.now());
+
     CodeReviewComments comment2 = CodeReviewComments.builder()
         .contents("Comment2")
         .status(CodeReviewComments.Status.ACTIVE)
         .user(user)
         .codeReviews(codeReview)
         .build();
+
+    ReflectionTestUtils.setField(comment2, "createdAt", LocalDateTime.now().plusSeconds(1));
 
     codeReviewCommentsRepository.saveAll(List.of(comment1, comment2));
 
@@ -119,10 +125,14 @@ public class CodeReviewCommentsRepositoryTest {
     Long firstLikesCount = (Long) firstTuple.get(2);
     Long secondLikesCount = (Long) secondTuple.get(2);
 
-    assertEquals(0L, firstLikesCount);
-    assertEquals(2L, secondLikesCount);
-
     assertEquals(codeReviewId, firstComment.getCodeReviews().getId());
     assertEquals(codeReviewId, secondComment.getCodeReviews().getId());
+
+    assertEquals(2L, firstComment.getId());
+    assertEquals(1L, secondComment.getId());
+
+    assertEquals(0, firstLikesCount);
+    assertEquals(2, secondLikesCount);
+
   }
 }
