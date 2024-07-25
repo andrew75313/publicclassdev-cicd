@@ -40,8 +40,6 @@ public class Users {
     @Column(nullable = false)
     private String password;
     private int point;
-    @Column(name = "refresh_token")
-    private String refreshToken;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -69,10 +67,6 @@ public class Users {
         this.name = name;
         this.password = password;
         this.intro = intro;
-    }
-
-    public void updateRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
 
     public void updateRole(RoleEnum role) {
