@@ -11,6 +11,7 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
 import jakarta.persistence.Tuple;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -55,6 +57,9 @@ public class CodeReviewsRepositoryTest {
         .status(Status.ACTIVE)
         .user(user1)
         .build();
+
+    ReflectionTestUtils.setField(codeReview1, "createdAt", LocalDateTime.now());
+
     codeReviewsRepository.save(codeReview1);
 
     CodeReviews codeReview2 = CodeReviews.builder()
@@ -64,6 +69,9 @@ public class CodeReviewsRepositoryTest {
         .status(Status.ACTIVE)
         .user(user2)
         .build();
+
+    ReflectionTestUtils.setField(codeReview2, "createdAt", LocalDateTime.now().plusSeconds(1));
+
     codeReviewsRepository.save(codeReview2);
   }
 
