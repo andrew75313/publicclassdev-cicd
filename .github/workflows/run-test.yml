@@ -2,36 +2,22 @@ name: CI - Run Test
 on:
   workflow_dispatch:
   pull_request:
-  push:
-    branches:
-      - develop
 permissions:
   contents: read
   pull-requests: read
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      DB_URL: jdbc:h2:mem:testdb # 임시 설정: H2 DB URL
-      DB_USERNAME: sa
-      DB_PASSWORD: # H2 DB의 경우 비밀번호는 비워두어도 무방
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup JDK
+      - name: setup jdk
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      - name: Print environment variables
-        run: env
-      - name: Build with Gradle
-        run: ./gradlew build
-      - name: Run tests
-        run: ./gradlew test --info # --info 옵션을 추가하여 테스트 로그를 자세히 확인
+      - name: gradlew test
+        run: ./gradlew test
