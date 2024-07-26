@@ -30,5 +30,12 @@ jobs:
           cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
+
+      - name: Print environment variables
+        run: env
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
       - name: gradlew test
         run: ./gradlew test
