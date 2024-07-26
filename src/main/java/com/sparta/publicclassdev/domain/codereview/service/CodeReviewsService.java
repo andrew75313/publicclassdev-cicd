@@ -15,15 +15,17 @@ import com.sparta.publicclassdev.domain.codereviewcomment.repository.CodeReviewC
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
+import com.sparta.publicclassdev.global.awss3.AwsS3Util;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import io.minio.GetObjectArgs;
-import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import jakarta.persistence.Tuple;
 import jakarta.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -43,7 +45,7 @@ public class CodeReviewsService {
   private final CodeReviewCommentsRepository codeReviewCommentsRepository;
   private final UsersRepository usersRepository;
 
-  private final MinioClient minioClient;
+  private final AwsS3Util awsS3Util;
 
   @Transactional
   public CodeReviewsResponseDto createCodeReview(CodeReviewsRequestDto codeReviewsRequestDto,
@@ -92,7 +94,7 @@ public class CodeReviewsService {
 
     CodeReviews foundCodeReviews = validateCodeReviewId(codeReviewsId);
 
-    String code = downloadCodeFile(foundCodeReviews);
+    String code = downloadCodeFile(foundCodeReviews.getCode());
 
     List<CodeReviewCommentsWithLikesResponseDto> commentList = codeReviewCommentsRepository.findByCodeReviewIdWithDetails(
             codeReviewsId).stream()
@@ -205,18 +207,25 @@ public class CodeReviewsService {
 
     if (code != null && !code.isEmpty()) {
       try {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(
-            StandardCharsets.UTF_8));
+        // 코드 문자열을 ByteArrayInputStream으로 변환
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8));
 
-        minioClient.putObject(
-            PutObjectArgs.builder()
-                .bucket("project-dev-bucket")
-                .object(filename)
-                .stream(inputStream, inputStream.available(), -1)
-                .contentType("text/plain")
-                .build()
-        );
-      } catch (Exception e) {
+        // ByteArrayInputStream을 임시 파일로 변환
+        File tempFile = File.createTempFile("temp", ".txt");
+        tempFile.deleteOnExit();
+        try (java.io.OutputStream os = new java.io.FileOutputStream(tempFile)) {
+          byte[] buffer = new byte[1024];
+          int length;
+          while ((length = inputStream.read(buffer)) != -1) {
+            os.write(buffer, 0, length);
+          }
+        }
+
+        awsS3Util.uploadFile(filename, tempFile);
+
+        return filename;
+
+      } catch (IOException e) {
         throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
       }
     }
@@ -224,25 +233,23 @@ public class CodeReviewsService {
     return filename;
   }
 
-  public String downloadCodeFile(CodeReviews codeReview) {
-    String code;
+  public String downloadCodeFile(String code) {
+    String downloadedCode;
 
-    try (InputStream stream = minioClient.getObject(
-        GetObjectArgs.builder()
-            .bucket("project-dev-bucket")
-            .object(codeReview.getCode())
-            .build())) {
-      ByteArrayOutputStream result = new ByteArrayOutputStream();
+    try (InputStream inputStream = awsS3Util.downloadFile(code);
+        ByteArrayOutputStream result = new ByteArrayOutputStream()) {
+
       byte[] buffer = new byte[1024];
       int length;
-      while ((length = stream.read(buffer)) != -1) {
+      while ((length = inputStream.read(buffer)) != -1) {
         result.write(buffer, 0, length);
       }
-      code = result.toString(StandardCharsets.UTF_8.name());
-    } catch (Exception e) {
+
+      downloadedCode = result.toString(StandardCharsets.UTF_8.name());
+    } catch (IOException e) {
       throw new CustomException(ErrorCode.FILE_DOWNLOAD_FAILED);
     }
 
-    return code;
+    return downloadedCode;
   }
 }

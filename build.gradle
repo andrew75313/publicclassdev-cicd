@@ -45,6 +45,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    // AWS SDK for Java v1
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.394'
 
     // minio
     implementation 'io.minio:minio:8.3.4'
@@ -53,6 +55,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     //redis 캐시
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+
 }
 
 tasks.named('test') {
