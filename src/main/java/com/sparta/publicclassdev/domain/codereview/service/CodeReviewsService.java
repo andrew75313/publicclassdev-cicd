@@ -207,10 +207,8 @@ public class CodeReviewsService {
 
     if (code != null && !code.isEmpty()) {
       try {
-        // 코드 문자열을 ByteArrayInputStream으로 변환
         ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8));
 
-        // ByteArrayInputStream을 임시 파일로 변환
         File tempFile = File.createTempFile("temp", ".txt");
         tempFile.deleteOnExit();
         try (java.io.OutputStream os = new java.io.FileOutputStream(tempFile)) {

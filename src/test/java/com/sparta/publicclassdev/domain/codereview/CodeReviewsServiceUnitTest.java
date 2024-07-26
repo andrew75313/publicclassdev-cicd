@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
@@ -15,9 +17,12 @@ import com.sparta.publicclassdev.domain.codereviewcomment.repository.CodeReviewC
 import com.sparta.publicclassdev.domain.users.entity.RoleEnum;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.domain.users.repository.UsersRepository;
+import com.sparta.publicclassdev.global.awss3.AwsS3Util;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import io.minio.MinioClient;
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -51,7 +56,7 @@ public class CodeReviewsServiceUnitTest {
   private UsersRepository usersRepository;
 
   @Mock
-  private MinioClient minioClient;
+  private AwsS3Util awsS3Util;
 
   @InjectMocks
   private CodeReviewsService codeReviewsService;
@@ -221,16 +226,18 @@ public class CodeReviewsServiceUnitTest {
   }
 
   @Test
-  void testUploadCodeFile() {
+  void testUploadCodeFile() throws IOException {
     // given
-    String code = createTestCode(testCodeReviewId);
-    String filename = "codereviews-code/code-1.txt";
+    Long codeReviewId = 123L;
+    String code = "public class Example {}";
+    String expectedFilename = "codereviews-code/code-" + codeReviewId + ".txt";
 
     // when
-    String result = codeReviewsService.uploadCodeFile(testCodeReviewId, code);
+    String filename = codeReviewsService.uploadCodeFile(codeReviewId, code);
 
     // then
-    assertEquals(filename, result);
+    assertEquals(expectedFilename, filename);
+    verify(awsS3Util).uploadFile(eq(expectedFilename), any(File.class));
   }
 
 }
