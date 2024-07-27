@@ -15,10 +15,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: '7.6'
+          gradle-version:
 
       - name: Build with Gradle
-        run: gradle build --no-daemon
+        run: ./gradlew build --no-daemon
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
@@ -28,6 +28,12 @@ jobs:
           push: true
           tags: myrepo/myapp:latest
 
+      - name: Upload .env file
+        uses: actions/upload-artifact@v3
+        with:
+          name: env-file
+          path: .env
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.8
         with:
@@ -35,6 +41,9 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # Download the .env file from GitHub Actions artifacts
+            aws s3 cp s3://your-bucket/path/to/.env /home/ubuntu/myapp/.env
+
             cd /home/ubuntu/myapp
             docker-compose down
             docker-compose pull
