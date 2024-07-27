@@ -31,8 +31,7 @@ jobs:
           push: true
           tags: myrepo/myapp:latest
 
-      - name: Upload .env file if exists
-        if: ${{ secrets.ENV_FILE_PATH != '' }}
+      - name: Upload .env file
         uses: actions/upload-artifact@v3
         with:
           name: env-file
@@ -45,13 +44,8 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Check if .env file exists in artifacts
-            if [ -f /home/ubuntu/myapp/.env ]; then
-              echo ".env file exists, proceeding to download and deploy."
-              aws s3 cp s3://your-bucket/path/to/.env /home/ubuntu/myapp/.env
-            else
-              echo ".env file does not exist, skipping download."
-            fi
+            # Download the .env file from GitHub Actions artifacts
+            aws s3 cp s3://your-bucket/path/to/.env /home/ubuntu/myapp/.env
 
             cd /home/ubuntu/myapp
             docker-compose down
