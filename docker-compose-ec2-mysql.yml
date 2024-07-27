@@ -1,15 +1,19 @@
 version: '3.8'
-
 services:
-  mysql:
-    image: mysql:latest
-    container_name: mysql
-    env_file:
-      - .env
+  db:
+    platform: linux/x86_64
+    image: mysql:8.0.28
+    container_name: publicclassdev-mysql
+    restart: always
     ports:
       - "3306:3306"
+    env_file:
+      - .env
     volumes:
-      - mysql-data:/var/lib/mysql
+      - ./db/mysql/data:/var/lib/mysql
+      - ./db/mysql/config:/etc/mysql/conf.d
+      - ./db/mysql/init:/docker-entrypoint-initdb.d
 
-volumes:
-  mysql-data:
+networks:
+  my-network:
+    external: true
